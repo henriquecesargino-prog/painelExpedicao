@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<title>Expedição Mobile</title>
+<style>
+  :root{
+    --bg:#0f172a; --card:#1e293b; --card2:#273449; --border:#334155;
+    --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; --accent2:#22c55e;
+    --warn:#f59e0b; --danger:#ef4444; --info:#06b6d4;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+  body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:70px}
+  .header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+  .header .title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
+  .header .title .ic{width:32px;height:32px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+  .header .date{font-size:11px;color:var(--muted);margin-top:2px}
+  .header .btn-add{background:var(--accent);border:none;color:#fff;width:38px;height:38px;border-radius:10px;font-size:22px;cursor:pointer;font-weight:700}
+  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+  .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;color:var(--muted);font-size:10px;cursor:pointer;border:none;background:none}
+  .bn-item .i{font-size:20px}
+  .bn-item.active{color:var(--accent)}
+  .bn-item.active .i{transform:scale(1.15)}
+  .content{padding:16px}
+  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+  .kpi .label{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+  .kpi .value{font-size:26px;font-weight:800;margin-top:4px}
+  .kpi .sub{font-size:11px;color:var(--muted);margin-top:3px}
+  .kpi .bar{height:5px;background:var(--card2);border-radius:4px;margin-top:10px;overflow:hidden}
+  .kpi .bar span{display:block;height:100%;border-radius:4px}
+  .kpi .value.green{color:var(--accent2)} .kpi .value.blue{color:var(--accent)}
+  .kpi .value.warn{color:var(--warn)} .kpi .value.danger{color:var(--danger)}
+  .kpi .value.info{color:var(--info)}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
+  .card h3{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+  .card h3 .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px}
+  .btn{background:var(--accent);color:#fff;border:none;padding:12px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;width:100%;transition:.2s}
+  .btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--border)}
+  .btn.green{background:var(--accent2)}
+  .btn.danger{background:var(--danger)}
+  .btn.sm{padding:8px 12px;font-size:12px;width:auto}
+  .btn-row{display:flex;gap:8px}
+  .btn-row .btn{flex:1}
+  .item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .item:last-child{border-bottom:none}
+  .item .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
+  .item .info{flex:1;min-width:0}
+  .item .info .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .info .desc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .item .actions{display:flex;gap:6px;flex-shrink:0}
+  .tag{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
+  .tag.ok{background:rgba(34,197,94,.15);color:var(--accent2)}
+  .tag.warn{background:rgba(245,158,11,.15);color:var(--warn)}
+  .tag.danger{background:rgba(239,68,68,.15);color:var(--danger)}
+  .tag.info{background:rgba(6,182,212,.15);color:var(--info)}
+  .tag.blue{background:rgba(59,130,246,.15);color:var(--accent)}
+  .search{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:14px;margin-bottom:12px}
+  .filters{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .filters .btn{flex:0 0 auto;width:auto;padding:8px 14px;font-size:12px}
+  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px}
+  .seg-tabs{display:flex;background:var(--card2);border-radius:11px;padding:4px;margin-bottom:14px;gap:4px}
+  .seg-tabs .seg{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;border-radius:8px;cursor:pointer}
+  .seg-tabs .seg.active{background:var(--accent);color:#fff}
+  .func-chips{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+  .func-chips .chip{flex:0 0 auto;padding:9px 14px;border-radius:20px;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .func-chips .chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .func-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 10px}
+  .func-head .fn{font-size:15px;font-weight:700}
+  .func-head .fc{font-size:12px;color:var(--muted);background:var(--card2);padding:3px 10px;border-radius:20px}
+  .sector-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
+  .sector-box .sl{font-size:12px;color:var(--muted);flex-shrink:0}
+  .sector-box input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px}
+  .sector-box .btn{width:auto;flex-shrink:0;padding:8px 12px;font-size:12px}
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;z-index:100}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease}
+  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .modal h3{margin-bottom:14px;font-size:16px}
+  .modal .handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+  .form-row.one{grid-template-columns:1fr}
+  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+  input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 12px;border-radius:9px;font-size:14px}
+  .modal .actions{display:flex;gap:10px;margin-top:16px}
+  .modal .actions .btn{flex:1}
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent2);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:200;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--danger)}
+  .chart-bar{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:8px}
+  .chart-bar .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
+  .chart-bar .col .val{font-size:10px;color:var(--muted)}
+  .chart-bar .col .fill{width:100%;background:var(--accent);border-radius:5px 5px 0 0;min-height:2px}
+  .chart-bar .col .lbl{font-size:10px;color:var(--muted)}
+  .progress{display:flex;gap:8px;margin-top:8px}
+  .progress .seg{height:7px;border-radius:4px}
+  .stat-line{display:flex;justify-content:space-between;font-size:12px;margin:8px 0 4px}
+  .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
+  .mini-stats .ms{background:var(--card2);border-radius:9px;padding:10px;text-align:center}
+  .mini-stats .ms .v{font-size:17px;font-weight:700}
+  .mini-stats .ms .l{font-size:10px;color:var(--muted)}
+  .section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px}
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <div class="title"><span class="ic">📦</span> <span id="hTitle">Painel</span></div>
+    <div class="date" id="hDate"></div>
+  </div>
+  <button class="btn-add" id="btnAdd" onclick="headerAdd()">+</button>
+</div>
+<div class="content" id="content"></div>
+<nav class="bottom-nav">
+  <button class="bn-item active" data-page="dashboard"><span class="i">📊</span>Painel</button>
+  <button class="bn-item" data-page="team"><span class="i">👥</span>Gestão</button>
+  <button class="bn-item" data-page="tasks"><span class="i">🔄</span>Rotinas</button>
+  <button class="bn-item" data-page="docs"><span class="i">📁</span>Docs</button>
+  <button class="bn-item" data-page="settings"><span class="i">⚙️</span>Ajustes</button>
+</nav>
+<div class="modal-bg" id="modalBg">
+  <div class="modal" id="modal">
+    <div class="handle"></div>
+    <div id="modalBody"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const KEY = 'expedicao_mobile_v1';
+let state = { settings:{empresa:'Casa do Soldador',responsavel:'Henrique'}, team:[], tasks:[], docs:[], ocorrencias:[], setores:{} };
+function load(){ try{ const r=localStorage.getItem(KEY); if(r) state=JSON.parse(r); if(!state.ocorrencias) state.ocorrencias=[]; if(!state.setores) state.setores={}; }catch(e){} }
+function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
+function toast(msg,err){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.classList.remove('show'),2500); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function todayISO(){ return new Date().toISOString().slice(0,10); }
+function fmtDate(iso){ if(!iso)return '—'; const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); }
+function initials(n){ return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
+function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+let page='dashboard';
+function setPage(p){
+  page=p;
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
+  const titles={dashboard:'Painel',team:'Gestão de equipe',tasks:'Rotinas',docs:'Documentos',settings:'Ajustes'};
+  document.getElementById('hTitle').textContent=titles[p]||'Painel';
+  render();
+}
+function headerAdd(){
+  if(page==='team'){ const sub=(state.ui&&state.ui.teamTab)||'cadastro'; if(sub==='cadastro') openMember(); }
+  else if(page==='tasks'){ const sub=(state.ui&&state.ui.routineTab)||'tarefas'; if(sub==='ocorrencias') openOcorrencia(); else openTask(); }
+  else if(page==='docs') openDoc();
+  else openIndicadores();
+}
+function render(){
+  const c=document.getElementById('content');
+  if(page==='dashboard') c.innerHTML=rDash();
+  else if(page==='team') c.innerHTML=rTeam();
+  else if(page==='tasks') c.innerHTML=rTasks();
+  else if(page==='docs') c.innerHTML=rDocs();
+  else if(page==='settings') c.innerHTML=rSettings();
+  bind();
+}
+/* ============ FUNÇÕES (derivadas dos colaboradores) ============ */
+function funcoes(){
+  const map={};
+  state.team.forEach(m=>{ const f=(m.role||'Sem função').trim(); if(!map[f]) map[f]=0; map[f]++; });
+  return Object.keys(map).sort();
+}
+function rDash(){
+  const total=state.team.length, ativos=state.team.filter(m=>m.status==='ativo').length;
+  const tarefasHoje=state.tasks.filter(t=>t.date===todayISO()).length;
+  const pendentes=state.tasks.filter(t=>t.status!=='concluida').length;
+  const docsAtencao=state.docs.filter(d=>d.status==='atencao').length;
+  const docsVencidos=state.docs.filter(d=>d.status==='vencido').length;
+  const ocorrAbertas=state.ocorrencias.filter(o=>o.status==='aberta').length;
+  const ind=state.settings.indicadores||{pedidosHoje:0,entregues:0,noPrazo:0,volume:0};
+  const taxa=ind.entregues>0?Math.round(ind.noPrazo/ind.entregues*100):0;
+  const presencaPct=total>0?Math.round(ativos/total*100):0;
+  const dias=[];
+  for(let i=6;i>=0;i--){ const d=new Date();d.setDate(d.getDate()-i);const iso=d.toISOString().slice(0,10);
+    dias.push({iso,lbl:d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''),total:state.tasks.filter(t=>t.date===iso).length,done:state.tasks.filter(t=>t.date===iso&&t.status==='concluida').length}); }
+  const maxDia=Math.max(1,...dias.map(d=>d.total));
+  return `
+  <div class="kpis">
+    <div class="kpi"><div class="label">Pedidos hoje</div><div class="value blue">${ind.pedidosHoje}</div><div class="sub">${ind.entregues} entregues</div></div>
+    <div class="kpi"><div class="label">No prazo</div><div class="value green">${taxa}%</div><div class="sub">${ind.noPrazo}/${ind.entregues}</div><div class="bar"><span style="width:${taxa}%;background:var(--accent2)"></span></div></div>
+    <div class="kpi"><div class="label">Tarefas abertas</div><div class="value warn">${pendentes}</div><div class="sub">${tarefasHoje} hoje</div></div>
+    <div class="kpi"><div class="label">Ocorrências</div><div class="value ${ocorrAbertas>0?'danger':'green'}">${ocorrAbertas}</div><div class="sub">abertas</div></div>
+  </div>
+  <div class="card">
+    <h3>Tarefas da semana <span class="badge">${state.tasks.filter(t=>t.status!=='concluida').length} abertas</span></h3>
+    <div class="chart-bar">${dias.map(d=>`<div class="col"><div class="val">${d.done}/${d.total}</div><div class="fill" style="height:${Math.round(d.total/maxDia*100)}%;background:var(--accent)"></div><div class="lbl">${d.lbl}</div></div>`).join('')}</div>
+  </div>
+  <div class="card">
+    <h3>👥 Equipe</h3>
+    <div class="mini-stats">
+      <div class="ms"><div class="v">${total}</div><div class="l">Total</div></div>
+      <div class="ms"><div class="v">${ativos}</div><div class="l">Ativos</div></div>
+      <div class="ms"><div class="v">${presencaPct}%</div><div class="l">Presença</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h3>✅ Tarefas de hoje</h3>
+    ${tarefasHoje===0?'<div class="empty">Nenhuma tarefa para hoje.</div>':state.tasks.filter(t=>t.date===todayISO()).map(t=>`
+      <div class="item" style="cursor:pointer" onclick="toggleTask('${t.id}')">
+        <span style="font-size:20px">${t.status==='concluida'?'✅':'⬜'}</span>
+        <div class="info"><div class="name" style="${t.status==='concluida'?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.title)}</div><div class="desc">${esc(t.assignee||'Sem responsável')}</div></div>
+      </div>`).join('')}
+  </div>
+  <div class="card">
+    <h3>📁 Documentos</h3>
+    ${state.docs.length===0?'<div class="empty">Nenhum documento.</div>':`
+    <div class="stat-line"><span>Válidos</span><b>${state.docs.length-docsVencidos-docsAtencao}</b></div>
+    <div class="progress"><div class="seg" style="width:${state.docs.length>0?(state.docs.length-docsVencidos-docsAtencao)/state.docs.length*100:0}%;background:var(--accent2)"></div></div>
+    <div class="stat-line"><span>⚠️ Atenção</span><b>${docsAtencao}</b></div>
+    <div class="progress"><div class="seg" style="width:${state.docs.length>0?docsAtencao/state.docs.length*100:0}%;background:var(--warn)"></div></div>
+    <div class="stat-line"><span>🔴 Vencidos</span><b>${docsVencidos}</b></div>
+    <div class="progress"><div class="seg" style="width:${state.docs.length>0?docsVencidos/state.docs.length*100:0}%;background:var(--danger)"></div></div>`}
+  </div>
+  `;
+}
+function statusTag(s){ const m={valido:['ok','Válido'],atencao:['warn','Atenção'],vencido:['danger','Vencido'],pendente:['info','Pendente']}; const [c,l]=m[s]||['info',s]; return `<span class="tag ${c}">${l}</span>`; }
+/* ============ GESTÃO DE EQUIPE (Cadastro + Gestão) ============ */
+function rTeam(){
+  const sub=(state.ui&&state.ui.teamTab)||'cadastro';
+  return `
+  <div class="seg-tabs">
+    <button class="seg ${sub==='cadastro'?'active':''}" onclick="state.ui=state.ui||{};state.ui.teamTab='cadastro';render()">➕ Cadastro</button>
+    <button class="seg ${sub==='gestao'?'active':''}" onclick="state.ui=state.ui||{};state.ui.teamTab='gestao';render()">🗂️ Gestão</button>
+  </div>
+  ${sub==='cadastro'?rCadastro():rGestao()}
+  `;
+}
+/* --- Sub-aba: Cadastro de colaboradores --- */
+function rCadastro(){
+  const q=(state.ui&&state.ui.teamSearch)||'';
+  const list=state.team.filter(m=>m.name.toLowerCase().includes(q.toLowerCase()));
+  return `
+  <input class="search" placeholder="🔍 Buscar colaborador..." value="${esc(q)}" oninput="state.ui=state.ui||{};state.ui.teamSearch=this.value;render()">
+  ${list.length===0?'<div class="empty">Nenhum colaborador cadastrado.<br>Toque em + para adicionar.</div>':list.map(m=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="item">
+        <div class="avatar" style="background:${m.color||'var(--accent)'}">${initials(m.name)}</div>
+        <div class="info"><div class="name">${esc(m.name)}</div><div class="desc">${esc(m.role||'—')} · ${esc(m.scale||'—')}</div></div>
+        <div class="actions">
+          ${m.status==='ativo'?'<span class="tag ok">Ativo</span>':'<span class="tag danger">Inativo</span>'}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
+        ${m.admissao?`<span class="tag blue">Adm. ${fmtDate(m.admissao)}</span>`:''}
+        ${m.pcd==='sim'?'<span class="tag info">PCD</span>':''}
+        ${m.cpf?`<span class="tag blue">CPF ${esc(m.cpf)}</span>`:''}
+        ${m.telefone?`<span class="tag info">📞 ${esc(m.telefone)}</span>`:''}
+        ${m.email?`<span class="tag info">✉️ ${esc(m.email)}</span>`:''}
+        ${m.desligamento?`<span class="tag danger">Desl. ${fmtDate(m.desligamento)}</span>`:''}
+      </div>
+      ${m.emergencia?`<div style="font-size:12px;color:var(--muted);margin-top:8px">🆘 Emergência: ${esc(m.emergencia)}</div>`:''}
+      ${m.obs?`<div style="font-size:12px;color:var(--muted);margin-top:4px">📝 ${esc(m.obs)}</div>`:''}
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn ghost sm" onclick="openMember('${m.id}')">✏️ Editar</button>
+        <button class="btn danger sm" onclick="delMember('${m.id}')">🗑️</button>
+      </div>
+    </div>`).join('')}
+  `;
+}
+function openMember(id){
+  const m=id?state.team.find(x=>x.id===id):null;
+  const funcs=funcoes();
+  const mb=document.getElementById('modalBody');
+  mb.innerHTML=`
+    <h3>${m?'Editar colaborador':'Novo colaborador'}</h3>
+    <div class="form-row one"><div><label>Nome completo *</label><input id="m_name" value="${esc(m?m.name:'')}"></div></div>
+    <div class="form-row"><div><label>Função</label><input id="m_role" list="funcList" value="${esc(m?m.role:'')}" placeholder="Ex: Conferente"></div><datalist id="funcList">${funcs.map(f=>`<option value="${esc(f)}">`).join('')}</datalist><div><label>Setor</label><input id="m_sector" value="${esc(m?m.sector:'')}" placeholder="Expedição"></div></div>
+    <div class="form-row"><div><label>Período</label><select id="m_scale"><option value="Manhã" ${m&&m.scale==='Manhã'?'selected':''}>Manhã</option><option value="Tarde" ${m&&m.scale==='Tarde'?'selected':''}>Tarde</option><option value="Integral" ${m&&m.scale==='Integral'?'selected':''}>Integral</option></select></div><div><label>Status</label><select id="m_status"><option value="ativo" ${m&&m.status==='ativo'?'selected':''}>Ativo</option><option value="inativo" ${m&&m.status==='inativo'?'selected':''}>Inativo</option></select></div></div>
+    <div class="form-row"><div><label>Data de admissão</label><input type="date" id="m_admissao" value="${m?m.admissao:''}"></div><div><label>Data de nascimento</label><input type="date" id="m_nascimento" value="${m?m.nascimento:''}"></div></div>
+    <div class="form-row"><div><label>CPF</label><input id="m_cpf" value="${esc(m?m.cpf:'')}" placeholder="000.000.000-00"></div><div><label>Telefone</label><input id="m_telefone" value="${esc(m?m.telefone:'')}" placeholder="(00) 00000-0000"></div></div>
+    <div class="form-row one"><div><label>E-mail</label><input id="m_email" value="${esc(m?m.email:'')}" placeholder="nome@empresa.com"></div></div>
+    <div class="form-row one"><div><label>Contato de emergência</label><input id="m_emergencia" value="${esc(m?m.emergencia:'')}" placeholder="Nome e telefone"></div></div>
+    <div class="form-row"><div><label>Data de desligamento</label><input type="date" id="m_desligamento" value="${m?m.desligamento:''}"></div><div><label>Colaborador PCD</label><select id="m_pcd"><option value="nao" ${m&&m.pcd==='sim'?'':'selected'}>Não</option><option value="sim" ${m&&m.pcd==='sim'?'selected':''}>Sim</option></select></div></div>
+    <div class="form-row one"><div><label>Observações</label><textarea id="m_obs" rows="2" placeholder="Anotações...">${esc(m?m.obs:'')}</textarea></div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveMember('${id||''}')">Salvar</button></div>`;
+  openModal();
+}
+function saveMember(id){
+  const name=document.getElementById('m_name').value.trim();
+  if(!name){toast('Informe o nome',true);return;}
+  const data={name,role:document.getElementById('m_role').value.trim(),sector:document.getElementById('m_sector').value.trim(),scale:document.getElementById('m_scale').value,status:document.getElementById('m_status').value,admissao:document.getElementById('m_admissao').value,nascimento:document.getElementById('m_nascimento').value,pcd:document.getElementById('m_pcd').value,cpf:document.getElementById('m_cpf').value.trim(),telefone:document.getElementById('m_telefone').value.trim(),email:document.getElementById('m_email').value.trim(),emergencia:document.getElementById('m_emergencia').value.trim(),desligamento:document.getElementById('m_desligamento').value,obs:document.getElementById('m_obs').value.trim()};
+  if(id){Object.assign(state.team.find(x=>x.id===id),data);toast('Atualizado');}
+  else{const colors=['#3b82f6','#22c55e','#f59e0b','#ef4444','#06b6d4','#a855f7','#ec4899','#84cc16'];data.id=uid();data.color=colors[state.team.length%colors.length];state.team.push(data);toast('Adicionado');}
+  save();closeModal();render();
+}
+function delMember(id){ if(!confirm('Excluir?'))return; state.team=state.team.filter(m=>m.id!==id); save(); render(); toast('Removido'); }
+/* --- Sub-aba: Gestão de colaboradores (por função + setor) --- */
+function rGestao(){
+  const funcs=funcoes();
+  if(funcs.length===0) return '<div class="empty">Nenhum colaborador cadastrado.<br>Cadastre na aba Cadastro primeiro.</div>';
+  const funcSel=(state.ui&&state.ui.gestFunc)||'todos';
+  let funcsList=funcs;
+  if(funcSel!=='todos') funcsList=funcs.filter(f=>f===funcSel);
+  const chips=`<div class="func-chips">
+    <button class="chip ${funcSel==='todos'?'active':''}" onclick="state.ui=state.ui||{};state.ui.gestFunc='todos';render()">Todos (${state.team.length})</button>
+    ${funcs.map(f=>`<button class="chip ${funcSel===f?'active':''}" onclick="state.ui=state.ui||{};state.ui.gestFunc='${esc(f)}';render()">${esc(f)} (${state.team.filter(m=>(m.role||'Sem função').trim()===f).length})</button>`).join('')}
+  </div>`;
+  const blocks=funcsList.map(f=>{
+    const membros=state.team.filter(m=>(m.role||'Sem função').trim()===f);
+    const setor=state.setores[f]||'';
+    return `
+    <div class="card" style="margin-bottom:12px">
+      <div class="func-head">
+        <span class="fn">${esc(f)}</span>
+        <span class="fc">${membros.length} colaborador(es)</span>
+      </div>
+      <div class="sector-box">
+        <span class="sl">Setor:</span>
+        <input id="sector_${esc(f)}" value="${esc(setor)}" placeholder="Ex: Expedição">
+        <button class="btn sm" onclick="saveSetor('${esc(f)}')">Salvar</button>
+      </div>
+      ${membros.map(m=>`
+        <div class="item">
+          <div class="avatar" style="background:${m.color||'var(--accent)'}">${initials(m.name)}</div>
+          <div class="info"><div class="name">${esc(m.name)}</div><div class="desc">${esc(m.scale||'—')}${m.sector?` · ${esc(m.sector)}`:''}</div></div>
+          <div class="actions">${m.status==='ativo'?'<span class="tag ok">Ativo</span>':'<span class="tag danger">Inativo</span>'}</div>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+  return `${chips}${blocks}`;
+}
+function saveSetor(func){
+  const v=document.getElementById('sector_'+func).value.trim();
+  state.setores[func]=v;
+  save(); render(); toast('Setor de '+func+' atualizado');
+}
+/* ============ ROTINAS (Tarefas + Ocorrências) ============ */
+function rTasks(){
+  const sub=(state.ui&&state.ui.routineTab)||'tarefas';
+  return `
+  <div class="seg-tabs">
+    <button class="seg ${sub==='tarefas'?'active':''}" onclick="state.ui=state.ui||{};state.ui.routineTab='tarefas';render()">✅ Tarefas</button>
+    <button class="seg ${sub==='ocorrencias'?'active':''}" onclick="state.ui=state.ui||{};state.ui.routineTab='ocorrencias';render()">⚠️ Ocorrências</button>
+  </div>
+  ${sub==='tarefas'?rTaskList():rOcorrList()}
+  `;
+}
+function rTaskList(){
+  const f=(state.ui&&state.ui.taskFilter)||'hoje';
+  let list=state.tasks.slice();
+  if(f==='hoje')list=list.filter(t=>t.date===todayISO());
+  if(f==='abertas')list=list.filter(t=>t.status!=='concluida');
+  list.sort((a,b)=>(a.status==='concluida')-(b.status==='concluida')||a.date.localeCompare(b.date));
+  return `
+  <div class="filters">
+    ${[['hoje','Hoje'],['abertas','Abertas'],['todas','Todas']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.taskFilter='${k}';render()">${l}</button>`).join('')}
+  </div>
+  ${list.length===0?'<div class="empty">Nenhuma tarefa aqui.<br>Toque em + para criar.</div>':list.map(t=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="item" style="cursor:pointer" onclick="toggleTask('${t.id}')">
+        <span style="font-size:22px">${t.status==='concluida'?'✅':'⬜'}</span>
+        <div class="info"><div class="name" style="${t.status==='concluida'?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.title)}</div><div class="desc">${fmtDate(t.date)} · ${esc(t.assignee||'Sem responsável')}</div></div>
+        <div class="actions">${t.priority==='alta'?'<span class="tag danger">Alta</span>':t.priority==='media'?'<span class="tag warn">Média</span>':'<span class="tag info">Baixa</span>'}</div>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn ghost sm" onclick="openTask('${t.id}')">✏️ Editar</button>
+        <button class="btn danger sm" onclick="delTask('${t.id}')">🗑️</button>
+      </div>
+    </div>`).join('')}
+  `;
+}
+function openTask(id){
+  const t=id?state.tasks.find(x=>x.id===id):null;
+  const members=state.team.map(m=>m.name);
+  const mb=document.getElementById('modalBody');
+  mb.innerHTML=`
+    <h3>${t?'Editar tarefa':'Nova tarefa'}</h3>
+    <div class="form-row one"><div><label>Tarefa *</label><input id="t_title" value="${esc(t?t.title:'')}" placeholder="Conferir carga..."></div></div>
+    <div class="form-row"><div><label>Data</label><input type="date" id="t_date" value="${t?t.date:todayISO()}"></div><div><label>Responsável</label><select id="t_assignee"><option value="">—</option>${members.map(n=>`<option ${t&&t.assignee===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div></div>
+    <div class="form-row"><div><label>Prioridade</label><select id="t_priority"><option value="baixa" ${t&&t.priority==='baixa'?'selected':''}>Baixa</option><option value="media" ${!t||t.priority==='media'?'selected':''}>Média</option><option value="alta" ${t&&t.priority==='alta'?'selected':''}>Alta</option></select></div><div><label>Status</label><select id="t_status"><option value="pendente" ${t&&t.status==='pendente'?'selected':''}>Pendente</option><option value="concluida" ${t&&t.status==='concluida'?'selected':''}>Concluída</option></select></div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveTask('${id||''}')">Salvar</button></div>`;
+  openModal();
+}
+function saveTask(id){
+  const title=document.getElementById('t_title').value.trim();
+  if(!title){toast('Informe a tarefa',true);return;}
+  const data={title,date:document.getElementById('t_date').value,assignee:document.getElementById('t_assignee').value,priority:document.getElementById('t_priority').value,status:document.getElementById('t_status').value};
+  if(id){Object.assign(state.tasks.find(x=>x.id===id),data);toast('Atualizada');}
+  else{data.id=uid();state.tasks.push(data);toast('Criada');}
+  save();closeModal();render();
+}
+function toggleTask(id){ const t=state.tasks.find(x=>x.id===id); t.status=t.status==='concluida'?'pendente':'concluida'; save(); render(); }
+function delTask(id){ if(!confirm('Excluir?'))return; state.tasks=state.tasks.filter(t=>t.id!==id); save(); render(); toast('Removida'); }
+/* ============ OCORRÊNCIAS ============ */
+function rOcorrList(){
+  const f=(state.ui&&state.ui.occFilter)||'abertas';
+  let list=state.ocorrencias.slice();
+  if(f==='abertas')list=list.filter(o=>o.status==='aberta');
+  if(f==='resolvidas')list=list.filter(o=>o.status==='resolvida');
+  list.sort((a,b)=>(a.status==='resolvida')-(b.status==='resolvida')||a.date.localeCompare(b.date));
+  return `
+  <div class="filters">
+    ${[['abertas','Abertas'],['resolvidas','Resolvidas'],['todas','Todas']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.occFilter='${k}';render()">${l}</button>`).join('')}
+  </div>
+  ${list.length===0?'<div class="empty">Nenhuma ocorrência aqui.<br>Toque em + para registrar.</div>':list.map(o=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="item">
+        <div class="avatar" style="background:${o.status==='resolvida'?'var(--accent2)':'var(--danger)'}">${o.status==='resolvida'?'✓':'⚠'}</div>
+        <div class="info"><div class="name">${esc(o.titulo)}</div><div class="desc">${fmtDate(o.date)} · ${esc(o.tipo||'—')}</div></div>
+        <div class="actions">${o.status==='resolvida'?'<span class="tag ok">Resolvida</span>':'<span class="tag danger">Aberta</span>'}</div>
+      </div>
+      ${o.desc?`<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(o.desc)}</div>`:''}
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn ghost sm" onclick="openOcorrencia('${o.id}')">✏️ Editar</button>
+        ${o.status==='aberta'?`<button class="btn green sm" onclick="resolveOcorrencia('${o.id}')">✓ Resolver</button>`:''}
+        <button class="btn danger sm" onclick="delOcorrencia('${o.id}')">🗑️</button>
+      </div>
+    </div>`).join('')}
+  `;
+}
+function openOcorrencia(id){
+  const o=id?state.ocorrencias.find(x=>x.id===id):null;
+  const members=state.team.map(m=>m.name);
+  const mb=document.getElementById('modalBody');
+  mb.innerHTML=`
+    <h3>${o?'Editar ocorrência':'Nova ocorrência'}</h3>
+    <div class="form-row one"><div><label>Título *</label><input id="o_titulo" value="${esc(o?o.titulo:'')}" placeholder="Ex: Atraso na carga do caminhão 12"></div></div>
+    <div class="form-row"><div><label>Data</label><input type="date" id="o_date" value="${o?o.date:todayISO()}"></div><div><label>Tipo</label><select id="o_tipo"><option ${o&&o.tipo==='Atraso'?'selected':''}>Atraso</option><option ${o&&o.tipo==='Avaria'?'selected':''}>Avaria</option><option ${o&&o.tipo==='Falha'?'selected':''}>Falha</option><option ${o&&o.tipo==='Reclamação'?'selected':''}>Reclamação</option><option ${o&&o.tipo==='Acidente'?'selected':''}>Acidente</option><option ${o&&o.tipo==='Outro'?'selected':''}>Outro</option></select></div></div>
+    <div class="form-row"><div><label>Responsável</label><select id="o_resp"><option value="">—</option>${members.map(n=>`<option ${o&&o.responsavel===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div><div><label>Status</label><select id="o_status"><option value="aberta" ${!o||o.status==='aberta'?'selected':''}>Aberta</option><option value="resolvida" ${o&&o.status==='resolvida'?'selected':''}>Resolvida</option></select></div></div>
+    <div class="form-row one"><div><label>Descrição</label><textarea id="o_desc" rows="3" placeholder="Descreva o que aconteceu...">${esc(o?o.desc:'')}</textarea></div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveOcorrencia('${id||''}')">Salvar</button></div>`;
+  openModal();
+}
+function saveOcorrencia(id){
+  const titulo=document.getElementById('o_titulo').value.trim();
+  if(!titulo){toast('Informe o título',true);return;}
+  const data={titulo,date:document.getElementById('o_date').value,tipo:document.getElementById('o_tipo').value,responsavel:document.getElementById('o_resp').value,status:document.getElementById('o_status').value,desc:document.getElementById('o_desc').value.trim()};
+  if(id){Object.assign(state.ocorrencias.find(x=>x.id===id),data);toast('Atualizada');}
+  else{data.id=uid();state.ocorrencias.push(data);toast('Ocorrência registrada');}
+  save();closeModal();render();
+}
+function resolveOcorrencia(id){ const o=state.ocorrencias.find(x=>x.id===id); o.status='resolvida'; save(); render(); toast('Ocorrência resolvida'); }
+function delOcorrencia(id){ if(!confirm('Excluir?'))return; state.ocorrencias=state.ocorrencias.filter(o=>o.id!==id); save(); render(); toast('Removida'); }
+function rDocs(){
+  const q=(state.ui&&state.ui.docSearch)||'';
+  const f=(state.ui&&state.ui.docFilter)||'todos';
+  let list=state.docs.filter(d=>d.nome.toLowerCase().includes(q.toLowerCase())||(d.tipo||'').toLowerCase().includes(q.toLowerCase()));
+  if(f==='validos')list=list.filter(d=>d.status==='valido');
+  if(f==='atencao')list=list.filter(d=>d.status==='atencao');
+  if(f==='vencidos')list=list.filter(d=>d.status==='vencido');
+  return `
+  <input class="search" placeholder="🔍 Buscar documento..." value="${esc(q)}" oninput="state.ui=state.ui||{};state.ui.docSearch=this.value;render()">
+  <div class="filters">
+    ${[['todos','Todos'],['validos','Válidos'],['atencao','Atenção'],['vencidos','Vencidos']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.docFilter='${k}';render()">${l}</button>`).join('')}
+  </div>
+  ${list.length===0?'<div class="empty">Nenhum documento.<br>Toque em + para cadastrar.</div>':list.map(d=>`
+    <div class="card" style="margin-bottom:10px">
+      <div class="item">
+        <div class="avatar" style="background:var(--info)">📄</div>
+        <div class="info"><div class="name">${esc(d.nome)}</div><div class="desc">${esc(d.tipo||'—')} · Val. ${fmtDate(d.validade)}</div></div>
+        <div class="actions">${statusTag(d.status)}</div>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="btn ghost sm" onclick="openDoc('${d.id}')">✏️ Editar</button>
+        <button class="btn danger sm" onclick="delDoc('${d.id}')">🗑️</button>
+      </div>
+    </div>`).join('')}
+  `;
+}
+function openDoc(id){
+  const d=id?state.docs.find(x=>x.id===id):null;
+  const members=state.team.map(m=>m.name);
+  const mb=document.getElementById('modalBody');
+  mb.innerHTML=`
+    <h3>${d?'Editar documento':'Novo documento'}</h3>
+    <div class="form-row"><div><label>Nome *</label><input id="d_nome" value="${esc(d?d.nome:'')}" placeholder="NF-e 4521"></div><div><label>Tipo</label><select id="d_tipo"><option ${d&&d.tipo==='Nota fiscal'?'selected':''}>Nota fiscal</option><option ${d&&d.tipo==='Ordem de serviço'?'selected':''}>Ordem de serviço</option><option ${d&&d.tipo==='Contrato'?'selected':''}>Contrato</option><option ${d&&d.tipo==='Certificado'?'selected':''}>Certificado</option><option ${d&&d.tipo==='Laudo'?'selected':''}>Laudo</option><option ${d&&d.tipo==='Outro'?'selected':''}>Outro</option></select></div></div>
+    <div class="form-row"><div><label>Validade</label><input type="date" id="d_validade" value="${d?d.validade:''}"></div><div><label>Responsável</label><select id="d_resp"><option value="">—</option>${members.map(n=>`<option ${d&&d.responsavel===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDoc('${id||''}')">Salvar</button></div>`;
+  openModal();
+}
+function saveDoc(id){
+  const nome=document.getElementById('d_nome').value.trim();
+  if(!nome){toast('Informe o nome',true);return;}
+  const validade=document.getElementById('d_validade').value;
+  let status='pendente';
+  if(validade){const hoje=new Date(todayISO()),venc=new Date(validade),diff=Math.ceil((venc-hoje)/86400000);if(diff<0)status='vencido';else if(diff<=15)status='atencao';else status='valido';}
+  const data={nome,tipo:document.getElementById('d_tipo').value,validade,responsavel:document.getElementById('d_resp').value,status};
+  if(id){Object.assign(state.docs.find(x=>x.id===id),data);toast('Atualizado');}
+  else{data.id=uid();state.docs.push(data);toast('Cadastrado');}
+  save();closeModal();render();
+}
+function delDoc(id){ if(!confirm('Excluir?'))return; state.docs=state.docs.filter(d=>d.id!==id); save(); render(); toast('Removido'); }
+function openIndicadores(){
+  const ind=state.settings.indicadores||{pedidosHoje:0,entregues:0,noPrazo:0,volume:0};
+  const mb=document.getElementById('modalBody');
+  mb.innerHTML=`
+    <h3>✏️ Indicadores do dia</h3>
+    <div class="form-row"><div><label>Pedidos hoje</label><input type="number" id="i_pedidos" value="${ind.pedidosHoje}"></div><div><label>Entregues</label><input type="number" id="i_entregues" value="${ind.entregues}"></div></div>
+    <div class="form-row"><div><label>No prazo</label><input type="number" id="i_prazo" value="${ind.noPrazo}"></div><div><label>Volume</label><input type="number" id="i_volume" value="${ind.volume}"></div></div>
+    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveIndicadores()">Salvar</button></div>`;
+  openModal();
+}
+function saveIndicadores(){
+  state.settings.indicadores={pedidosHoje:+document.getElementById('i_pedidos').value||0,entregues:+document.getElementById('i_entregues').value||0,noPrazo:+document.getElementById('i_prazo').value||0,volume:+document.getElementById('i_volume').value||0};
+  save();closeModal();render();toast('Indicadores atualizados');
+}
+function rSettings(){
+  return `
+  <div class="card">
+    <h3>🏢 Empresa</h3>
+    <div class="form-row one"><div><label>Nome da empresa</label><input id="s_empresa" value="${esc(state.settings.empresa||'')}"></div></div>
+    <div class="form-row one"><div><label>Responsável</label><input id="s_resp" value="${esc(state.settings.responsavel||'')}"></div></div>
+    <button class="btn" onclick="saveSettings()">Salvar</button>
+  </div>
+  <div class="card">
+    <h3>💾 Dados</h3>
+    <p style="color:var(--muted);font-size:12px;margin-bottom:12px">Os dados ficam salvos no navegador deste aparelho.</p>
+    <div class="btn-row">
+      <button class="btn ghost" onclick="exportData()">💾 Backup</button>
+      <button class="btn danger" onclick="clearData()">🗑️ Limpar</button>
+    </div>
+  </div>
+  `;
+}
+function saveSettings(){ state.settings.empresa=document.getElementById('s_empresa').value.trim(); state.settings.responsavel=document.getElementById('s_resp').value.trim(); save(); render(); toast('Salvo'); }
+function exportData(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='expedicao_backup_'+todayISO()+'.json'; a.click(); URL.revokeObjectURL(a.href); toast('Backup exportado'); }
+function clearData(){ if(!confirm('Apagar todos os dados deste aparelho?'))return; localStorage.removeItem(KEY); state={settings:{empresa:'Casa do Soldador',responsavel:'Henrique'},team:[],tasks:[],docs:[],ocorrencias:[],setores:{}}; save(); render(); toast('Dados limpos'); }
+function openModal(){ document.getElementById('modalBg').classList.add('show'); }
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+document.getElementById('modalBg').addEventListener('click',e=>{ if(e.target.id==='modalBg')closeModal(); });
+function bind(){
+  document.querySelectorAll('.bn-item').forEach(b=>{ b.onclick=()=>setPage(b.dataset.page); });
+}
+document.getElementById('hDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
+load();
+render();
+</script>
+</body>
+</html>
