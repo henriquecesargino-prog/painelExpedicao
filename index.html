@@ -3,534 +3,556 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0f172a">
 <title>Expedição Mobile</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root{
-    --bg:#0f172a; --card:#1e293b; --card2:#273449; --border:#334155;
-    --text:#e2e8f0; --muted:#94a3b8; --accent:#3b82f6; --accent2:#22c55e;
-    --warn:#f59e0b; --danger:#ef4444; --info:#06b6d4;
-  }
-  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
-  body{background:var(--bg);color:var(--text);min-height:100vh;padding-bottom:70px}
-  .header{background:var(--card);border-bottom:1px solid var(--border);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
-  .header .title{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px}
-  .header .title .ic{width:32px;height:32px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
-  .header .date{font-size:11px;color:var(--muted);margin-top:2px}
-  .header .btn-add{background:var(--accent);border:none;color:#fff;width:38px;height:38px;border-radius:10px;font-size:22px;cursor:pointer;font-weight:700}
-  .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--border);display:flex;z-index:50;padding-bottom:env(safe-area-inset-bottom)}
-  .bn-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px 8px;color:var(--muted);font-size:10px;cursor:pointer;border:none;background:none}
-  .bn-item .i{font-size:20px}
-  .bn-item.active{color:var(--accent)}
-  .bn-item.active .i{transform:scale(1.15)}
-  .content{padding:16px}
-  .kpis{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
-  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
-  .kpi .label{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
-  .kpi .value{font-size:26px;font-weight:800;margin-top:4px}
-  .kpi .sub{font-size:11px;color:var(--muted);margin-top:3px}
-  .kpi .bar{height:5px;background:var(--card2);border-radius:4px;margin-top:10px;overflow:hidden}
-  .kpi .bar span{display:block;height:100%;border-radius:4px}
-  .kpi .value.green{color:var(--accent2)} .kpi .value.blue{color:var(--accent)}
-  .kpi .value.warn{color:var(--warn)} .kpi .value.danger{color:var(--danger)}
-  .kpi .value.info{color:var(--info)}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
-  .card h3{font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
-  .card h3 .badge{background:var(--accent);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px}
-  .btn{background:var(--accent);color:#fff;border:none;padding:12px 16px;border-radius:10px;cursor:pointer;font-size:14px;font-weight:600;width:100%;transition:.2s}
-  .btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--border)}
-  .btn.green{background:var(--accent2)}
-  .btn.danger{background:var(--danger)}
-  .btn.sm{padding:8px 12px;font-size:12px;width:auto}
-  .btn-row{display:flex;gap:8px}
-  .btn-row .btn{flex:1}
-  .item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
-  .item:last-child{border-bottom:none}
-  .item .avatar{width:38px;height:38px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0}
-  .item .info{flex:1;min-width:0}
-  .item .info .name{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .item .info .desc{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .item .actions{display:flex;gap:6px;flex-shrink:0}
-  .tag{display:inline-block;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:600}
-  .tag.ok{background:rgba(34,197,94,.15);color:var(--accent2)}
-  .tag.warn{background:rgba(245,158,11,.15);color:var(--warn)}
-  .tag.danger{background:rgba(239,68,68,.15);color:var(--danger)}
-  .tag.info{background:rgba(6,182,212,.15);color:var(--info)}
-  .tag.blue{background:rgba(59,130,246,.15);color:var(--accent)}
-  .search{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-size:14px;margin-bottom:12px}
-  .filters{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
-  .filters .btn{flex:0 0 auto;width:auto;padding:8px 14px;font-size:12px}
-  .empty{text-align:center;color:var(--muted);padding:30px 10px;font-size:13px}
-  .seg-tabs{display:flex;background:var(--card2);border-radius:11px;padding:4px;margin-bottom:14px;gap:4px}
-  .seg-tabs .seg{flex:1;padding:10px;border:none;background:none;color:var(--muted);font-size:13px;font-weight:600;border-radius:8px;cursor:pointer}
-  .seg-tabs .seg.active{background:var(--accent);color:#fff}
-  .func-chips{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
-  .func-chips .chip{flex:0 0 auto;padding:9px 14px;border-radius:20px;background:var(--card2);border:1px solid var(--border);color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
-  .func-chips .chip.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .func-head{display:flex;align-items:center;justify-content:space-between;margin:6px 2px 10px}
-  .func-head .fn{font-size:15px;font-weight:700}
-  .func-head .fc{font-size:12px;color:var(--muted);background:var(--card2);padding:3px 10px;border-radius:20px}
-  .sector-box{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:10px;display:flex;align-items:center;gap:10px}
-  .sector-box .sl{font-size:12px;color:var(--muted);flex-shrink:0}
-  .sector-box input{flex:1;background:var(--card);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:8px;font-size:13px}
-  .sector-box .btn{width:auto;flex-shrink:0;padding:8px 12px;font-size:12px}
-  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:flex-end;z-index:100}
-  .modal-bg.show{display:flex}
-  .modal{background:var(--card);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));width:100%;max-height:88vh;overflow-y:auto;animation:slideUp .25s ease}
-  @keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
-  .modal h3{margin-bottom:14px;font-size:16px}
-  .modal .handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:0 auto 14px}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
-  .form-row.one{grid-template-columns:1fr}
-  label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
-  input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:11px 12px;border-radius:9px;font-size:14px}
-  .modal .actions{display:flex;gap:10px;margin-top:16px}
-  .modal .actions .btn{flex:1}
-  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--accent2);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:200;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  .toast.err{background:var(--danger)}
-  .chart-bar{display:flex;align-items:flex-end;gap:8px;height:140px;padding-top:8px}
-  .chart-bar .col{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;height:100%;justify-content:flex-end}
-  .chart-bar .col .val{font-size:10px;color:var(--muted)}
-  .chart-bar .col .fill{width:100%;background:var(--accent);border-radius:5px 5px 0 0;min-height:2px}
-  .chart-bar .col .lbl{font-size:10px;color:var(--muted)}
-  .progress{display:flex;gap:8px;margin-top:8px}
-  .progress .seg{height:7px;border-radius:4px}
-  .stat-line{display:flex;justify-content:space-between;font-size:12px;margin:8px 0 4px}
-  .mini-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}
-  .mini-stats .ms{background:var(--card2);border-radius:9px;padding:10px;text-align:center}
-  .mini-stats .ms .v{font-size:17px;font-weight:700}
-  .mini-stats .ms .l{font-size:10px;color:var(--muted)}
-  .section-title{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:18px 0 10px}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#f1f5f9;--card:#fff;--primary:#2563eb;--primary-dark:#1d4ed8;
+  --green:#16a34a;--green-bg:#dcfce7;--red:#dc2626;--red-bg:#fee2e2;
+  --amber:#d97706;--amber-bg:#fef3c7;--gray:#64748b;--border:#e2e8f0;
+  --text:#0f172a;--text2:#475569;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:70px}
+.hidden{display:none!important}
+/* Header */
+header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 16px 20px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+header h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
+header .date{font-size:13px;opacity:.9;margin-top:2px}
+header .add-btn{position:absolute;right:16px;top:14px;width:40px;height:40px;border-radius:50%;background:#fff;color:var(--primary);font-size:26px;font-weight:700;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
+/* Cards KPI */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
+.kpi{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.kpi .label{font-size:12px;color:var(--text2);font-weight:600}
+.kpi .value{font-size:26px;font-weight:800;margin-top:4px}
+.kpi .sub{font-size:12px;color:var(--gray);margin-top:2px}
+.kpi.green .value{color:var(--green)}.kpi.red .value{color:var(--red)}.kpi.blue .value{color:var(--primary)}.kpi.amber .value{color:var(--amber)}
+/* Seções */
+.section{background:var(--card);border-radius:14px;margin:0 14px 14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.section h2{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+/* Tarefas semana */
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
+.week .day{background:var(--bg);border-radius:10px;padding:8px 2px}
+.week .day .d{font-size:11px;color:var(--gray);font-weight:600}
+.week .day .n{font-size:16px;font-weight:800;margin-top:2px}
+.week .day.done{background:var(--green-bg);color:var(--green)}
+.week .day.partial{background:var(--amber-bg);color:var(--amber)}
+/* Listas */
+.list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
+.list-item:last-child{border-bottom:none}
+.list-item .info{flex:1}
+.list-item .name{font-weight:600;font-size:15px}
+.list-item .meta{font-size:12px;color:var(--gray);margin-top:2px}
+.badge{font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px}
+.badge.green{background:var(--green-bg);color:var(--green)}
+.badge.red{background:var(--red-bg);color:var(--red)}
+.badge.amber{background:var(--amber-bg);color:var(--amber)}
+.badge.blue{background:#dbeafe;color:var(--primary)}
+/* Botões */
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+.btn.primary{background:var(--primary);color:#fff}
+.btn.green{background:var(--green);color:#fff}
+.btn.red{background:var(--red);color:#fff}
+.btn.gray{background:var(--bg);color:var(--text2)}
+/* Formulário */
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
+.form-group input,.form-group select,.form-group textarea{width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:#fff}
+.form-group textarea{min-height:70px;resize:vertical}
+/* Modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:100}
+.modal .sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:20px;max-height:90vh;overflow-y:auto}
+.modal .sheet h3{font-size:18px;font-weight:700;margin-bottom:16px}
+/* Navegação inferior */
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid var(--border);z-index:60;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;padding:10px 4px;border:none;background:none;font-size:10px;font-weight:600;color:var(--gray);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+nav button.active{color:var(--primary)}
+nav button .ic{font-size:20px}
+/* Empty */
+.empty{text-align:center;color:var(--gray);padding:20px;font-size:14px}
+/* Toast */
+#toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
+#toast.show{opacity:1}
+/* Loading */
+#loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300}
+#loading .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading p{margin-top:12px;color:var(--gray);font-size:14px}
 </style>
 </head>
 <body>
-<div class="header">
-  <div>
-    <div class="title"><span class="ic">📦</span> <span id="hTitle">Painel</span></div>
-    <div class="date" id="hDate"></div>
+
+<div id="loading"><div class="spinner"></div><p>Conectando ao banco de dados...</p></div>
+
+<header>
+  <h1>📦 Painel</h1>
+  <div class="date" id="currentDate"></div>
+  <button class="add-btn" id="addBtn" onclick="openAdd()">+</button>
+</header>
+
+<!-- PAINEL -->
+<div id="tab-painel" class="tab">
+  <div class="kpis">
+    <div class="kpi blue"><div class="label">Pedidos hoje</div><div class="value" id="kpiPedidos">0</div><div class="sub" id="kpiPedidosSub">0 entregues</div></div>
+    <div class="kpi green"><div class="label">No prazo</div><div class="value" id="kpiPrazo">0%</div><div class="sub" id="kpiPrazoSub">0/0</div></div>
+    <div class="kpi amber"><div class="label">Tarefas abertas</div><div class="value" id="kpiTarefas">0</div><div class="sub" id="kpiTarefasSub">0 hoje</div></div>
+    <div class="kpi red"><div class="label">Ocorrências</div><div class="value" id="kpiOcorrencias">0</div><div class="sub" id="kpiOcorrenciasSub">0 abertas</div></div>
   </div>
-  <button class="btn-add" id="btnAdd" onclick="headerAdd()">+</button>
+
+  <div class="section">
+    <h2>📅 Tarefas da semana</h2>
+    <div class="week" id="weekGrid"></div>
+  </div>
+
+  <div class="section">
+    <h2>👥 Equipe</h2>
+    <div id="teamList"></div>
+  </div>
+
+  <div class="section">
+    <h2>📁 Documentos</h2>
+    <div id="docsList"></div>
+  </div>
 </div>
-<div class="content" id="content"></div>
-<nav class="bottom-nav">
-  <button class="bn-item active" data-page="dashboard"><span class="i">📊</span>Painel</button>
-  <button class="bn-item" data-page="team"><span class="i">👥</span>Gestão</button>
-  <button class="bn-item" data-page="tasks"><span class="i">🔄</span>Rotinas</button>
-  <button class="bn-item" data-page="docs"><span class="i">📁</span>Docs</button>
-  <button class="bn-item" data-page="settings"><span class="i">⚙️</span>Ajustes</button>
-</nav>
-<div class="modal-bg" id="modalBg">
-  <div class="modal" id="modal">
-    <div class="handle"></div>
+
+<!-- GESTÃO -->
+<div id="tab-gestao" class="tab hidden">
+  <div class="section">
+    <h2>👥 Colaboradores</h2>
+    <button class="btn primary" onclick="openAdd('team')">+ Adicionar colaborador</button>
+    <div id="gestaoTeamList"></div>
+  </div>
+</div>
+
+<!-- ROTINAS -->
+<div id="tab-rotinas" class="tab hidden">
+  <div class="section">
+    <h2>🔄 Tarefas</h2>
+    <button class="btn primary" onclick="openAdd('task')">+ Nova tarefa</button>
+    <div id="taskList"></div>
+  </div>
+</div>
+
+<!-- DOCS -->
+<div id="tab-docs" class="tab hidden">
+  <div class="section">
+    <h2>📁 Documentos</h2>
+    <button class="btn primary" onclick="openAdd('doc')">+ Novo documento</button>
+    <div id="docsFullList"></div>
+  </div>
+</div>
+
+<!-- AJUSTES -->
+<div id="tab-ajustes" class="tab hidden">
+  <div class="section">
+    <h2>⚙️ Ajustes</h2>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:12px">Seus dados agora são salvos na nuvem (Supabase) e ficam sincronizados entre todos os aparelhos.</p>
+    <button class="btn gray" onclick="showStatus()">🔌 Status da conexão</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()">
+  <div class="sheet">
+    <h3 id="modalTitle">Novo item</h3>
     <div id="modalBody"></div>
   </div>
 </div>
-<div class="toast" id="toast"></div>
+
+<nav>
+  <button class="active" data-tab="painel" onclick="switchTab('painel')"><span class="ic">📊</span>Painel</button>
+  <button data-tab="gestao" onclick="switchTab('gestao')"><span class="ic">👥</span>Gestão</button>
+  <button data-tab="rotinas" onclick="switchTab('rotinas')"><span class="ic">🔄</span>Rotinas</button>
+  <button data-tab="docs" onclick="switchTab('docs')"><span class="ic">📁</span>Docs</button>
+  <button data-tab="ajustes" onclick="switchTab('ajustes')"><span class="ic">⚙️</span>Ajustes</button>
+</nav>
+
+<div id="toast"></div>
+
 <script>
-const KEY = 'expedicao_mobile_v1';
-let state = { settings:{empresa:'Casa do Soldador',responsavel:'Henrique'}, team:[], tasks:[], docs:[], ocorrencias:[], setores:{} };
-function load(){ try{ const r=localStorage.getItem(KEY); if(r) state=JSON.parse(r); if(!state.ocorrencias) state.ocorrencias=[]; if(!state.setores) state.setores={}; }catch(e){} }
-function save(){ localStorage.setItem(KEY, JSON.stringify(state)); }
-function toast(msg,err){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast show'+(err?' err':''); setTimeout(()=>t.classList.remove('show'),2500); }
-function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
-function todayISO(){ return new Date().toISOString().slice(0,10); }
-function fmtDate(iso){ if(!iso)return '—'; const d=new Date(iso+'T00:00:00'); return d.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'}); }
-function initials(n){ return n.split(' ').filter(Boolean).slice(0,2).map(w=>w[0].toUpperCase()).join(''); }
-function esc(s){ return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-let page='dashboard';
-function setPage(p){
-  page=p;
-  document.querySelectorAll('.bn-item').forEach(b=>b.classList.toggle('active',b.dataset.page===p));
-  const titles={dashboard:'Painel',team:'Gestão de equipe',tasks:'Rotinas',docs:'Documentos',settings:'Ajustes'};
-  document.getElementById('hTitle').textContent=titles[p]||'Painel';
-  render();
+// ============================================
+// CONFIGURAÇÃO SUPABASE
+// ============================================
+const SUPABASE_URL = 'https://arddjbrlrvhfkicwxau.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_UtMW4iyPKhVetCSRR2AnoA_tokTJiwv';
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================
+// ESTADO
+// ============================================
+let team = [];
+let tasks = [];
+let ocorrencias = [];
+let docs = [];
+
+// ============================================
+// FUNÇÕES DE DADOS (Supabase)
+// ============================================
+async function loadAll() {
+  try {
+    const [t, tk, o, d] = await Promise.all([
+      supabase.from('team').select('*').order('name'),
+      supabase.from('tasks').select('*').order('date', {ascending:false}),
+      supabase.from('ocorrencias').select('*').order('date', {ascending:false}),
+      supabase.from('docs').select('*').order('nome')
+    ]);
+    team = t.data || [];
+    tasks = tk.data || [];
+    ocorrencias = o.data || [];
+    docs = d.data || [];
+    renderAll();
+  } catch(e) {
+    console.error('Erro ao carregar:', e);
+    toast('Erro ao conectar ao banco de dados');
+  } finally {
+    document.getElementById('loading').classList.add('hidden');
+  }
 }
-function headerAdd(){
-  if(page==='team'){ const sub=(state.ui&&state.ui.teamTab)||'cadastro'; if(sub==='cadastro') openMember(); }
-  else if(page==='tasks'){ const sub=(state.ui&&state.ui.routineTab)||'tarefas'; if(sub==='ocorrencias') openOcorrencia(); else openTask(); }
-  else if(page==='docs') openDoc();
-  else openIndicadores();
+
+async function addRecord(table, data) {
+  try {
+    const { error } = await supabase.from(table).insert(data);
+    if (error) throw error;
+    await loadAll();
+    toast('Salvo com sucesso!');
+    return true;
+  } catch(e) {
+    console.error('Erro ao salvar:', e);
+    toast('Erro ao salvar: ' + (e.message || 'tente novamente'));
+    return false;
+  }
 }
-function render(){
-  const c=document.getElementById('content');
-  if(page==='dashboard') c.innerHTML=rDash();
-  else if(page==='team') c.innerHTML=rTeam();
-  else if(page==='tasks') c.innerHTML=rTasks();
-  else if(page==='docs') c.innerHTML=rDocs();
-  else if(page==='settings') c.innerHTML=rSettings();
-  bind();
+
+async function updateRecord(table, id, data) {
+  try {
+    const { error } = await supabase.from(table).update(data).eq('id', id);
+    if (error) throw error;
+    await loadAll();
+    toast('Atualizado!');
+    return true;
+  } catch(e) {
+    console.error('Erro ao atualizar:', e);
+    toast('Erro ao atualizar');
+    return false;
+  }
 }
-/* ============ FUNÇÕES (derivadas dos colaboradores) ============ */
-function funcoes(){
-  const map={};
-  state.team.forEach(m=>{ const f=(m.role||'Sem função').trim(); if(!map[f]) map[f]=0; map[f]++; });
-  return Object.keys(map).sort();
+
+async function deleteRecord(table, id) {
+  try {
+    const { error } = await supabase.from(table).delete().eq('id', id);
+    if (error) throw error;
+    await loadAll();
+    toast('Removido');
+    return true;
+  } catch(e) {
+    console.error('Erro ao remover:', e);
+    toast('Erro ao remover');
+    return false;
+  }
 }
-function rDash(){
-  const total=state.team.length, ativos=state.team.filter(m=>m.status==='ativo').length;
-  const tarefasHoje=state.tasks.filter(t=>t.date===todayISO()).length;
-  const pendentes=state.tasks.filter(t=>t.status!=='concluida').length;
-  const docsAtencao=state.docs.filter(d=>d.status==='atencao').length;
-  const docsVencidos=state.docs.filter(d=>d.status==='vencido').length;
-  const ocorrAbertas=state.ocorrencias.filter(o=>o.status==='aberta').length;
-  const ind=state.settings.indicadores||{pedidosHoje:0,entregues:0,noPrazo:0,volume:0};
-  const taxa=ind.entregues>0?Math.round(ind.noPrazo/ind.entregues*100):0;
-  const presencaPct=total>0?Math.round(ativos/total*100):0;
-  const dias=[];
-  for(let i=6;i>=0;i--){ const d=new Date();d.setDate(d.getDate()-i);const iso=d.toISOString().slice(0,10);
-    dias.push({iso,lbl:d.toLocaleDateString('pt-BR',{weekday:'short'}).replace('.',''),total:state.tasks.filter(t=>t.date===iso).length,done:state.tasks.filter(t=>t.date===iso&&t.status==='concluida').length}); }
-  const maxDia=Math.max(1,...dias.map(d=>d.total));
-  return `
-  <div class="kpis">
-    <div class="kpi"><div class="label">Pedidos hoje</div><div class="value blue">${ind.pedidosHoje}</div><div class="sub">${ind.entregues} entregues</div></div>
-    <div class="kpi"><div class="label">No prazo</div><div class="value green">${taxa}%</div><div class="sub">${ind.noPrazo}/${ind.entregues}</div><div class="bar"><span style="width:${taxa}%;background:var(--accent2)"></span></div></div>
-    <div class="kpi"><div class="label">Tarefas abertas</div><div class="value warn">${pendentes}</div><div class="sub">${tarefasHoje} hoje</div></div>
-    <div class="kpi"><div class="label">Ocorrências</div><div class="value ${ocorrAbertas>0?'danger':'green'}">${ocorrAbertas}</div><div class="sub">abertas</div></div>
-  </div>
-  <div class="card">
-    <h3>Tarefas da semana <span class="badge">${state.tasks.filter(t=>t.status!=='concluida').length} abertas</span></h3>
-    <div class="chart-bar">${dias.map(d=>`<div class="col"><div class="val">${d.done}/${d.total}</div><div class="fill" style="height:${Math.round(d.total/maxDia*100)}%;background:var(--accent)"></div><div class="lbl">${d.lbl}</div></div>`).join('')}</div>
-  </div>
-  <div class="card">
-    <h3>👥 Equipe</h3>
-    <div class="mini-stats">
-      <div class="ms"><div class="v">${total}</div><div class="l">Total</div></div>
-      <div class="ms"><div class="v">${ativos}</div><div class="l">Ativos</div></div>
-      <div class="ms"><div class="v">${presencaPct}%</div><div class="l">Presença</div></div>
-    </div>
-  </div>
-  <div class="card">
-    <h3>✅ Tarefas de hoje</h3>
-    ${tarefasHoje===0?'<div class="empty">Nenhuma tarefa para hoje.</div>':state.tasks.filter(t=>t.date===todayISO()).map(t=>`
-      <div class="item" style="cursor:pointer" onclick="toggleTask('${t.id}')">
-        <span style="font-size:20px">${t.status==='concluida'?'✅':'⬜'}</span>
-        <div class="info"><div class="name" style="${t.status==='concluida'?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.title)}</div><div class="desc">${esc(t.assignee||'Sem responsável')}</div></div>
-      </div>`).join('')}
-  </div>
-  <div class="card">
-    <h3>📁 Documentos</h3>
-    ${state.docs.length===0?'<div class="empty">Nenhum documento.</div>':`
-    <div class="stat-line"><span>Válidos</span><b>${state.docs.length-docsVencidos-docsAtencao}</b></div>
-    <div class="progress"><div class="seg" style="width:${state.docs.length>0?(state.docs.length-docsVencidos-docsAtencao)/state.docs.length*100:0}%;background:var(--accent2)"></div></div>
-    <div class="stat-line"><span>⚠️ Atenção</span><b>${docsAtencao}</b></div>
-    <div class="progress"><div class="seg" style="width:${state.docs.length>0?docsAtencao/state.docs.length*100:0}%;background:var(--warn)"></div></div>
-    <div class="stat-line"><span>🔴 Vencidos</span><b>${docsVencidos}</b></div>
-    <div class="progress"><div class="seg" style="width:${state.docs.length>0?docsVencidos/state.docs.length*100:0}%;background:var(--danger)"></div></div>`}
-  </div>
-  `;
+
+// ============================================
+// RENDERIZAÇÃO
+// ============================================
+function renderAll() {
+  renderKPIs();
+  renderWeek();
+  renderTeam();
+  renderDocs();
+  renderGestaoTeam();
+  renderTasks();
+  renderDocsFull();
 }
-function statusTag(s){ const m={valido:['ok','Válido'],atencao:['warn','Atenção'],vencido:['danger','Vencido'],pendente:['info','Pendente']}; const [c,l]=m[s]||['info',s]; return `<span class="tag ${c}">${l}</span>`; }
-/* ============ GESTÃO DE EQUIPE (Cadastro + Gestão) ============ */
-function rTeam(){
-  const sub=(state.ui&&state.ui.teamTab)||'cadastro';
-  return `
-  <div class="seg-tabs">
-    <button class="seg ${sub==='cadastro'?'active':''}" onclick="state.ui=state.ui||{};state.ui.teamTab='cadastro';render()">➕ Cadastro</button>
-    <button class="seg ${sub==='gestao'?'active':''}" onclick="state.ui=state.ui||{};state.ui.teamTab='gestao';render()">🗂️ Gestão</button>
-  </div>
-  ${sub==='cadastro'?rCadastro():rGestao()}
-  `;
+
+function renderKPIs() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const pedidosHoje = tasks.filter(t => t.date === hoje).length;
+  const entregues = tasks.filter(t => t.date === hoje && t.status === 'concluida').length;
+  const prazo = pedidosHoje > 0 ? Math.round((entregues/pedidosHoje)*100) : 0;
+  const tarefasAbertas = tasks.filter(t => t.status !== 'concluida').length;
+  const tarefasHoje = tasks.filter(t => t.date === hoje && t.status !== 'concluida').length;
+  const ocorrAbertas = ocorrencias.filter(o => o.status === 'aberta').length;
+
+  document.getElementById('kpiPedidos').textContent = pedidosHoje;
+  document.getElementById('kpiPedidosSub').textContent = entregues + ' entregues';
+  document.getElementById('kpiPrazo').textContent = prazo + '%';
+  document.getElementById('kpiPrazoSub').textContent = entregues + '/' + pedidosHoje;
+  document.getElementById('kpiTarefas').textContent = tarefasAbertas;
+  document.getElementById('kpiTarefasSub').textContent = tarefasHoje + ' hoje';
+  document.getElementById('kpiOcorrencias').textContent = ocorrencias.length;
+  document.getElementById('kpiOcorrenciasSub').textContent = ocorrAbertas + ' abertas';
 }
-/* --- Sub-aba: Cadastro de colaboradores --- */
-function rCadastro(){
-  const q=(state.ui&&state.ui.teamSearch)||'';
-  const list=state.team.filter(m=>m.name.toLowerCase().includes(q.toLowerCase()));
-  return `
-  <input class="search" placeholder="🔍 Buscar colaborador..." value="${esc(q)}" oninput="state.ui=state.ui||{};state.ui.teamSearch=this.value;render()">
-  ${list.length===0?'<div class="empty">Nenhum colaborador cadastrado.<br>Toque em + para adicionar.</div>':list.map(m=>`
-    <div class="card" style="margin-bottom:10px">
-      <div class="item">
-        <div class="avatar" style="background:${m.color||'var(--accent)'}">${initials(m.name)}</div>
-        <div class="info"><div class="name">${esc(m.name)}</div><div class="desc">${esc(m.role||'—')} · ${esc(m.scale||'—')}</div></div>
-        <div class="actions">
-          ${m.status==='ativo'?'<span class="tag ok">Ativo</span>':'<span class="tag danger">Inativo</span>'}
-        </div>
+
+function renderWeek() {
+  const dias = ['seg','ter','qua','qui','sex','sáb','dom'];
+  const grid = document.getElementById('weekGrid');
+  grid.innerHTML = '';
+  const hoje = new Date();
+  const inicioSemana = new Date(hoje);
+  inicioSemana.setDate(hoje.getDate() - (hoje.getDay() === 0 ? 6 : hoje.getDay() - 1));
+
+  dias.forEach((d, i) => {
+    const data = new Date(inicioSemana);
+    data.setDate(inicioSemana.getDate() + i);
+    const dataStr = data.toISOString().split('T')[0];
+    const doDia = tasks.filter(t => t.date === dataStr);
+    const feitas = doDia.filter(t => t.status === 'concluida').length;
+    const total = doDia.length;
+    const pct = total > 0 ? feitas/total : 0;
+    const cls = total > 0 && pct === 1 ? 'done' : (total > 0 ? 'partial' : '');
+    grid.innerHTML += `<div class="day ${cls}"><div class="d">${d}</div><div class="n">${feitas}/${total}</div></div>`;
+  });
+}
+
+function renderTeam() {
+  const el = document.getElementById('teamList');
+  const ativos = team.filter(t => t.status === 'ativo');
+  if (ativos.length === 0) { el.innerHTML = '<div class="empty">Nenhum colaborador ativo</div>'; return; }
+  el.innerHTML = ativos.slice(0,5).map(m => `
+    <div class="list-item">
+      <div class="info">
+        <div class="name">${m.name}</div>
+        <div class="meta">${m.role || '—'} · ${m.sector || '—'}</div>
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">
-        ${m.admissao?`<span class="tag blue">Adm. ${fmtDate(m.admissao)}</span>`:''}
-        ${m.pcd==='sim'?'<span class="tag info">PCD</span>':''}
-        ${m.cpf?`<span class="tag blue">CPF ${esc(m.cpf)}</span>`:''}
-        ${m.telefone?`<span class="tag info">📞 ${esc(m.telefone)}</span>`:''}
-        ${m.email?`<span class="tag info">✉️ ${esc(m.email)}</span>`:''}
-        ${m.desligamento?`<span class="tag danger">Desl. ${fmtDate(m.desligamento)}</span>`:''}
+      <span class="badge green">Ativo</span>
+    </div>`).join('');
+}
+
+function renderDocs() {
+  const el = document.getElementById('docsList');
+  if (docs.length === 0) { el.innerHTML = '<div class="empty">Nenhum documento.</div>'; return; }
+  el.innerHTML = docs.slice(0,3).map(d => `
+    <div class="list-item">
+      <div class="info">
+        <div class="name">${d.nome}</div>
+        <div class="meta">${d.tipo || '—'} · ${d.status || '—'}</div>
       </div>
-      ${m.emergencia?`<div style="font-size:12px;color:var(--muted);margin-top:8px">🆘 Emergência: ${esc(m.emergencia)}</div>`:''}
-      ${m.obs?`<div style="font-size:12px;color:var(--muted);margin-top:4px">📝 ${esc(m.obs)}</div>`:''}
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn ghost sm" onclick="openMember('${m.id}')">✏️ Editar</button>
-        <button class="btn danger sm" onclick="delMember('${m.id}')">🗑️</button>
+      <span class="badge ${d.status === 'ok' ? 'green' : 'amber'}">${d.status || '—'}</span>
+    </div>`).join('');
+}
+
+function renderGestaoTeam() {
+  const el = document.getElementById('gestaoTeamList');
+  if (team.length === 0) { el.innerHTML = '<div class="empty">Nenhum colaborador cadastrado</div>'; return; }
+  el.innerHTML = team.map(m => `
+    <div class="list-item">
+      <div class="info">
+        <div class="name">${m.name}</div>
+        <div class="meta">${m.role || '—'} · ${m.sector || '—'} · ${m.scale || '—'}</div>
       </div>
-    </div>`).join('')}
-  `;
-}
-function openMember(id){
-  const m=id?state.team.find(x=>x.id===id):null;
-  const funcs=funcoes();
-  const mb=document.getElementById('modalBody');
-  mb.innerHTML=`
-    <h3>${m?'Editar colaborador':'Novo colaborador'}</h3>
-    <div class="form-row one"><div><label>Nome completo *</label><input id="m_name" value="${esc(m?m.name:'')}"></div></div>
-    <div class="form-row"><div><label>Função</label><input id="m_role" list="funcList" value="${esc(m?m.role:'')}" placeholder="Ex: Conferente"></div><datalist id="funcList">${funcs.map(f=>`<option value="${esc(f)}">`).join('')}</datalist><div><label>Setor</label><input id="m_sector" value="${esc(m?m.sector:'')}" placeholder="Expedição"></div></div>
-    <div class="form-row"><div><label>Período</label><select id="m_scale"><option value="Manhã" ${m&&m.scale==='Manhã'?'selected':''}>Manhã</option><option value="Tarde" ${m&&m.scale==='Tarde'?'selected':''}>Tarde</option><option value="Integral" ${m&&m.scale==='Integral'?'selected':''}>Integral</option></select></div><div><label>Status</label><select id="m_status"><option value="ativo" ${m&&m.status==='ativo'?'selected':''}>Ativo</option><option value="inativo" ${m&&m.status==='inativo'?'selected':''}>Inativo</option></select></div></div>
-    <div class="form-row"><div><label>Data de admissão</label><input type="date" id="m_admissao" value="${m?m.admissao:''}"></div><div><label>Data de nascimento</label><input type="date" id="m_nascimento" value="${m?m.nascimento:''}"></div></div>
-    <div class="form-row"><div><label>CPF</label><input id="m_cpf" value="${esc(m?m.cpf:'')}" placeholder="000.000.000-00"></div><div><label>Telefone</label><input id="m_telefone" value="${esc(m?m.telefone:'')}" placeholder="(00) 00000-0000"></div></div>
-    <div class="form-row one"><div><label>E-mail</label><input id="m_email" value="${esc(m?m.email:'')}" placeholder="nome@empresa.com"></div></div>
-    <div class="form-row one"><div><label>Contato de emergência</label><input id="m_emergencia" value="${esc(m?m.emergencia:'')}" placeholder="Nome e telefone"></div></div>
-    <div class="form-row"><div><label>Data de desligamento</label><input type="date" id="m_desligamento" value="${m?m.desligamento:''}"></div><div><label>Colaborador PCD</label><select id="m_pcd"><option value="nao" ${m&&m.pcd==='sim'?'':'selected'}>Não</option><option value="sim" ${m&&m.pcd==='sim'?'selected':''}>Sim</option></select></div></div>
-    <div class="form-row one"><div><label>Observações</label><textarea id="m_obs" rows="2" placeholder="Anotações...">${esc(m?m.obs:'')}</textarea></div></div>
-    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveMember('${id||''}')">Salvar</button></div>`;
-  openModal();
-}
-function saveMember(id){
-  const name=document.getElementById('m_name').value.trim();
-  if(!name){toast('Informe o nome',true);return;}
-  const data={name,role:document.getElementById('m_role').value.trim(),sector:document.getElementById('m_sector').value.trim(),scale:document.getElementById('m_scale').value,status:document.getElementById('m_status').value,admissao:document.getElementById('m_admissao').value,nascimento:document.getElementById('m_nascimento').value,pcd:document.getElementById('m_pcd').value,cpf:document.getElementById('m_cpf').value.trim(),telefone:document.getElementById('m_telefone').value.trim(),email:document.getElementById('m_email').value.trim(),emergencia:document.getElementById('m_emergencia').value.trim(),desligamento:document.getElementById('m_desligamento').value,obs:document.getElementById('m_obs').value.trim()};
-  if(id){Object.assign(state.team.find(x=>x.id===id),data);toast('Atualizado');}
-  else{const colors=['#3b82f6','#22c55e','#f59e0b','#ef4444','#06b6d4','#a855f7','#ec4899','#84cc16'];data.id=uid();data.color=colors[state.team.length%colors.length];state.team.push(data);toast('Adicionado');}
-  save();closeModal();render();
-}
-function delMember(id){ if(!confirm('Excluir?'))return; state.team=state.team.filter(m=>m.id!==id); save(); render(); toast('Removido'); }
-/* --- Sub-aba: Gestão de colaboradores (por função + setor) --- */
-function rGestao(){
-  const funcs=funcoes();
-  if(funcs.length===0) return '<div class="empty">Nenhum colaborador cadastrado.<br>Cadastre na aba Cadastro primeiro.</div>';
-  const funcSel=(state.ui&&state.ui.gestFunc)||'todos';
-  let funcsList=funcs;
-  if(funcSel!=='todos') funcsList=funcs.filter(f=>f===funcSel);
-  const chips=`<div class="func-chips">
-    <button class="chip ${funcSel==='todos'?'active':''}" onclick="state.ui=state.ui||{};state.ui.gestFunc='todos';render()">Todos (${state.team.length})</button>
-    ${funcs.map(f=>`<button class="chip ${funcSel===f?'active':''}" onclick="state.ui=state.ui||{};state.ui.gestFunc='${esc(f)}';render()">${esc(f)} (${state.team.filter(m=>(m.role||'Sem função').trim()===f).length})</button>`).join('')}
-  </div>`;
-  const blocks=funcsList.map(f=>{
-    const membros=state.team.filter(m=>(m.role||'Sem função').trim()===f);
-    const setor=state.setores[f]||'';
-    return `
-    <div class="card" style="margin-bottom:12px">
-      <div class="func-head">
-        <span class="fn">${esc(f)}</span>
-        <span class="fc">${membros.length} colaborador(es)</span>
+      <div style="display:flex;gap:6px">
+        <span class="badge ${m.status === 'ativo' ? 'green' : 'red'}">${m.status || '—'}</span>
+        <button class="badge blue" onclick="editTeam('${m.id}')">✏️</button>
+        <button class="badge red" onclick="removeTeam('${m.id}')">🗑️</button>
       </div>
-      <div class="sector-box">
-        <span class="sl">Setor:</span>
-        <input id="sector_${esc(f)}" value="${esc(setor)}" placeholder="Ex: Expedição">
-        <button class="btn sm" onclick="saveSetor('${esc(f)}')">Salvar</button>
+    </div>`).join('');
+}
+
+function renderTasks() {
+  const el = document.getElementById('taskList');
+  if (tasks.length === 0) { el.innerHTML = '<div class="empty">Nenhuma tarefa</div>'; return; }
+  el.innerHTML = tasks.map(t => `
+    <div class="list-item">
+      <div class="info">
+        <div class="name">${t.title}</div>
+        <div class="meta">${t.date || '—'} · ${t.assignee || '—'} · ${t.priority || '—'}</div>
       </div>
-      ${membros.map(m=>`
-        <div class="item">
-          <div class="avatar" style="background:${m.color||'var(--accent)'}">${initials(m.name)}</div>
-          <div class="info"><div class="name">${esc(m.name)}</div><div class="desc">${esc(m.scale||'—')}${m.sector?` · ${esc(m.sector)}`:''}</div></div>
-          <div class="actions">${m.status==='ativo'?'<span class="tag ok">Ativo</span>':'<span class="tag danger">Inativo</span>'}</div>
-        </div>`).join('')}
-    </div>`;
-  }).join('');
-  return `${chips}${blocks}`;
-}
-function saveSetor(func){
-  const v=document.getElementById('sector_'+func).value.trim();
-  state.setores[func]=v;
-  save(); render(); toast('Setor de '+func+' atualizado');
-}
-/* ============ ROTINAS (Tarefas + Ocorrências) ============ */
-function rTasks(){
-  const sub=(state.ui&&state.ui.routineTab)||'tarefas';
-  return `
-  <div class="seg-tabs">
-    <button class="seg ${sub==='tarefas'?'active':''}" onclick="state.ui=state.ui||{};state.ui.routineTab='tarefas';render()">✅ Tarefas</button>
-    <button class="seg ${sub==='ocorrencias'?'active':''}" onclick="state.ui=state.ui||{};state.ui.routineTab='ocorrencias';render()">⚠️ Ocorrências</button>
-  </div>
-  ${sub==='tarefas'?rTaskList():rOcorrList()}
-  `;
-}
-function rTaskList(){
-  const f=(state.ui&&state.ui.taskFilter)||'hoje';
-  let list=state.tasks.slice();
-  if(f==='hoje')list=list.filter(t=>t.date===todayISO());
-  if(f==='abertas')list=list.filter(t=>t.status!=='concluida');
-  list.sort((a,b)=>(a.status==='concluida')-(b.status==='concluida')||a.date.localeCompare(b.date));
-  return `
-  <div class="filters">
-    ${[['hoje','Hoje'],['abertas','Abertas'],['todas','Todas']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.taskFilter='${k}';render()">${l}</button>`).join('')}
-  </div>
-  ${list.length===0?'<div class="empty">Nenhuma tarefa aqui.<br>Toque em + para criar.</div>':list.map(t=>`
-    <div class="card" style="margin-bottom:10px">
-      <div class="item" style="cursor:pointer" onclick="toggleTask('${t.id}')">
-        <span style="font-size:22px">${t.status==='concluida'?'✅':'⬜'}</span>
-        <div class="info"><div class="name" style="${t.status==='concluida'?'text-decoration:line-through;color:var(--muted)':''}">${esc(t.title)}</div><div class="desc">${fmtDate(t.date)} · ${esc(t.assignee||'Sem responsável')}</div></div>
-        <div class="actions">${t.priority==='alta'?'<span class="tag danger">Alta</span>':t.priority==='media'?'<span class="tag warn">Média</span>':'<span class="tag info">Baixa</span>'}</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="badge ${t.status === 'concluida' ? 'green' : (t.status === 'em_andamento' ? 'amber' : 'blue')}">${t.status || '—'}</span>
+        <button class="badge blue" onclick="toggleTask('${t.id}')">✓</button>
+        <button class="badge red" onclick="removeTask('${t.id}')">🗑️</button>
       </div>
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn ghost sm" onclick="openTask('${t.id}')">✏️ Editar</button>
-        <button class="btn danger sm" onclick="delTask('${t.id}')">🗑️</button>
+    </div>`).join('');
+}
+
+function renderDocsFull() {
+  const el = document.getElementById('docsFullList');
+  if (docs.length === 0) { el.innerHTML = '<div class="empty">Nenhum documento</div>'; return; }
+  el.innerHTML = docs.map(d => `
+    <div class="list-item">
+      <div class="info">
+        <div class="name">${d.nome}</div>
+        <div class="meta">${d.tipo || '—'} · ${d.validade || '—'} · ${d.responsavel || '—'}</div>
       </div>
-    </div>`).join('')}
-  `;
-}
-function openTask(id){
-  const t=id?state.tasks.find(x=>x.id===id):null;
-  const members=state.team.map(m=>m.name);
-  const mb=document.getElementById('modalBody');
-  mb.innerHTML=`
-    <h3>${t?'Editar tarefa':'Nova tarefa'}</h3>
-    <div class="form-row one"><div><label>Tarefa *</label><input id="t_title" value="${esc(t?t.title:'')}" placeholder="Conferir carga..."></div></div>
-    <div class="form-row"><div><label>Data</label><input type="date" id="t_date" value="${t?t.date:todayISO()}"></div><div><label>Responsável</label><select id="t_assignee"><option value="">—</option>${members.map(n=>`<option ${t&&t.assignee===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div></div>
-    <div class="form-row"><div><label>Prioridade</label><select id="t_priority"><option value="baixa" ${t&&t.priority==='baixa'?'selected':''}>Baixa</option><option value="media" ${!t||t.priority==='media'?'selected':''}>Média</option><option value="alta" ${t&&t.priority==='alta'?'selected':''}>Alta</option></select></div><div><label>Status</label><select id="t_status"><option value="pendente" ${t&&t.status==='pendente'?'selected':''}>Pendente</option><option value="concluida" ${t&&t.status==='concluida'?'selected':''}>Concluída</option></select></div></div>
-    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveTask('${id||''}')">Salvar</button></div>`;
-  openModal();
-}
-function saveTask(id){
-  const title=document.getElementById('t_title').value.trim();
-  if(!title){toast('Informe a tarefa',true);return;}
-  const data={title,date:document.getElementById('t_date').value,assignee:document.getElementById('t_assignee').value,priority:document.getElementById('t_priority').value,status:document.getElementById('t_status').value};
-  if(id){Object.assign(state.tasks.find(x=>x.id===id),data);toast('Atualizada');}
-  else{data.id=uid();state.tasks.push(data);toast('Criada');}
-  save();closeModal();render();
-}
-function toggleTask(id){ const t=state.tasks.find(x=>x.id===id); t.status=t.status==='concluida'?'pendente':'concluida'; save(); render(); }
-function delTask(id){ if(!confirm('Excluir?'))return; state.tasks=state.tasks.filter(t=>t.id!==id); save(); render(); toast('Removida'); }
-/* ============ OCORRÊNCIAS ============ */
-function rOcorrList(){
-  const f=(state.ui&&state.ui.occFilter)||'abertas';
-  let list=state.ocorrencias.slice();
-  if(f==='abertas')list=list.filter(o=>o.status==='aberta');
-  if(f==='resolvidas')list=list.filter(o=>o.status==='resolvida');
-  list.sort((a,b)=>(a.status==='resolvida')-(b.status==='resolvida')||a.date.localeCompare(b.date));
-  return `
-  <div class="filters">
-    ${[['abertas','Abertas'],['resolvidas','Resolvidas'],['todas','Todas']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.occFilter='${k}';render()">${l}</button>`).join('')}
-  </div>
-  ${list.length===0?'<div class="empty">Nenhuma ocorrência aqui.<br>Toque em + para registrar.</div>':list.map(o=>`
-    <div class="card" style="margin-bottom:10px">
-      <div class="item">
-        <div class="avatar" style="background:${o.status==='resolvida'?'var(--accent2)':'var(--danger)'}">${o.status==='resolvida'?'✓':'⚠'}</div>
-        <div class="info"><div class="name">${esc(o.titulo)}</div><div class="desc">${fmtDate(o.date)} · ${esc(o.tipo||'—')}</div></div>
-        <div class="actions">${o.status==='resolvida'?'<span class="tag ok">Resolvida</span>':'<span class="tag danger">Aberta</span>'}</div>
+      <div style="display:flex;gap:6px">
+        <span class="badge ${d.status === 'ok' ? 'green' : 'amber'}">${d.status || '—'}</span>
+        <button class="badge red" onclick="removeDoc('${d.id}')">🗑️</button>
       </div>
-      ${o.desc?`<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(o.desc)}</div>`:''}
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn ghost sm" onclick="openOcorrencia('${o.id}')">✏️ Editar</button>
-        ${o.status==='aberta'?`<button class="btn green sm" onclick="resolveOcorrencia('${o.id}')">✓ Resolver</button>`:''}
-        <button class="btn danger sm" onclick="delOcorrencia('${o.id}')">🗑️</button>
-      </div>
-    </div>`).join('')}
-  `;
+    </div>`).join('');
 }
-function openOcorrencia(id){
-  const o=id?state.ocorrencias.find(x=>x.id===id):null;
-  const members=state.team.map(m=>m.name);
-  const mb=document.getElementById('modalBody');
-  mb.innerHTML=`
-    <h3>${o?'Editar ocorrência':'Nova ocorrência'}</h3>
-    <div class="form-row one"><div><label>Título *</label><input id="o_titulo" value="${esc(o?o.titulo:'')}" placeholder="Ex: Atraso na carga do caminhão 12"></div></div>
-    <div class="form-row"><div><label>Data</label><input type="date" id="o_date" value="${o?o.date:todayISO()}"></div><div><label>Tipo</label><select id="o_tipo"><option ${o&&o.tipo==='Atraso'?'selected':''}>Atraso</option><option ${o&&o.tipo==='Avaria'?'selected':''}>Avaria</option><option ${o&&o.tipo==='Falha'?'selected':''}>Falha</option><option ${o&&o.tipo==='Reclamação'?'selected':''}>Reclamação</option><option ${o&&o.tipo==='Acidente'?'selected':''}>Acidente</option><option ${o&&o.tipo==='Outro'?'selected':''}>Outro</option></select></div></div>
-    <div class="form-row"><div><label>Responsável</label><select id="o_resp"><option value="">—</option>${members.map(n=>`<option ${o&&o.responsavel===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div><div><label>Status</label><select id="o_status"><option value="aberta" ${!o||o.status==='aberta'?'selected':''}>Aberta</option><option value="resolvida" ${o&&o.status==='resolvida'?'selected':''}>Resolvida</option></select></div></div>
-    <div class="form-row one"><div><label>Descrição</label><textarea id="o_desc" rows="3" placeholder="Descreva o que aconteceu...">${esc(o?o.desc:'')}</textarea></div></div>
-    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveOcorrencia('${id||''}')">Salvar</button></div>`;
-  openModal();
+
+// ============================================
+// NAVEGAÇÃO
+// ============================================
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
+  document.getElementById('tab-' + tab).classList.remove('hidden');
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.querySelector(`nav button[data-tab="${tab}"]`).classList.add('active');
 }
-function saveOcorrencia(id){
-  const titulo=document.getElementById('o_titulo').value.trim();
-  if(!titulo){toast('Informe o título',true);return;}
-  const data={titulo,date:document.getElementById('o_date').value,tipo:document.getElementById('o_tipo').value,responsavel:document.getElementById('o_resp').value,status:document.getElementById('o_status').value,desc:document.getElementById('o_desc').value.trim()};
-  if(id){Object.assign(state.ocorrencias.find(x=>x.id===id),data);toast('Atualizada');}
-  else{data.id=uid();state.ocorrencias.push(data);toast('Ocorrência registrada');}
-  save();closeModal();render();
+
+// ============================================
+// MODAL / FORMULÁRIOS
+// ============================================
+function openAdd(type) {
+  const modal = document.getElementById('modal');
+  const title = document.getElementById('modalTitle');
+  const body = document.getElementById('modalBody');
+
+  if (type === 'team') {
+    title.textContent = 'Novo colaborador';
+    body.innerHTML = `
+      <div class="form-group"><label>Nome *</label><input id="f-name" placeholder="Nome completo"></div>
+      <div class="form-group"><label>Função</label><input id="f-role" placeholder="Ex: Soldador"></div>
+      <div class="form-group"><label>Setor</label><input id="f-sector" placeholder="Ex: Produção"></div>
+      <div class="form-group"><label>Período</label><select id="f-scale"><option value="">Selecione</option><option>Manhã</option><option>Tarde</option><option>Noite</option><option>Integral</option></select></div>
+      <div class="form-group"><label>Status</label><select id="f-status"><option value="ativo">Ativo</option><option value="inativo">Inativo</option></select></div>
+      <button class="btn primary" onclick="saveTeam()">Salvar</button>`;
+  } else if (type === 'task') {
+    title.textContent = 'Nova tarefa';
+    body.innerHTML = `
+      <div class="form-group"><label>Título *</label><input id="f-title" placeholder="Ex: Conferir estoque"></div>
+      <div class="form-group"><label>Data</label><input id="f-date" type="date"></div>
+      <div class="form-group"><label>Responsável</label><input id="f-assignee" placeholder="Nome"></div>
+      <div class="form-group"><label>Prioridade</label><select id="f-priority"><option value="baixa">Baixa</option><option value="media" selected>Média</option><option value="alta">Alta</option></select></div>
+      <button class="btn primary" onclick="saveTask()">Salvar</button>`;
+  } else if (type === 'doc') {
+    title.textContent = 'Novo documento';
+    body.innerHTML = `
+      <div class="form-group"><label>Nome *</label><input id="f-nome" placeholder="Ex: ASO"></div>
+      <div class="form-group"><label>Tipo</label><input id="f-tipo" placeholder="Ex: Exame"></div>
+      <div class="form-group"><label>Validade</label><input id="f-validade" type="date"></div>
+      <div class="form-group"><label>Responsável</label><input id="f-resp" placeholder="Nome"></div>
+      <div class="form-group"><label>Status</label><select id="f-docstatus"><option value="pendente">Pendente</option><option value="ok">OK</option><option value="vencido">Vencido</option></select></div>
+      <button class="btn primary" onclick="saveDoc()">Salvar</button>`;
+  } else {
+    title.textContent = 'Novo item';
+    body.innerHTML = '<div class="empty">Escolha uma opção no menu</div>';
+  }
+  modal.classList.remove('hidden');
 }
-function resolveOcorrencia(id){ const o=state.ocorrencias.find(x=>x.id===id); o.status='resolvida'; save(); render(); toast('Ocorrência resolvida'); }
-function delOcorrencia(id){ if(!confirm('Excluir?'))return; state.ocorrencias=state.ocorrencias.filter(o=>o.id!==id); save(); render(); toast('Removida'); }
-function rDocs(){
-  const q=(state.ui&&state.ui.docSearch)||'';
-  const f=(state.ui&&state.ui.docFilter)||'todos';
-  let list=state.docs.filter(d=>d.nome.toLowerCase().includes(q.toLowerCase())||(d.tipo||'').toLowerCase().includes(q.toLowerCase()));
-  if(f==='validos')list=list.filter(d=>d.status==='valido');
-  if(f==='atencao')list=list.filter(d=>d.status==='atencao');
-  if(f==='vencidos')list=list.filter(d=>d.status==='vencido');
-  return `
-  <input class="search" placeholder="🔍 Buscar documento..." value="${esc(q)}" oninput="state.ui=state.ui||{};state.ui.docSearch=this.value;render()">
-  <div class="filters">
-    ${[['todos','Todos'],['validos','Válidos'],['atencao','Atenção'],['vencidos','Vencidos']].map(([k,l])=>`<button class="btn ${f===k?'':'ghost'}" onclick="state.ui=state.ui||{};state.ui.docFilter='${k}';render()">${l}</button>`).join('')}
-  </div>
-  ${list.length===0?'<div class="empty">Nenhum documento.<br>Toque em + para cadastrar.</div>':list.map(d=>`
-    <div class="card" style="margin-bottom:10px">
-      <div class="item">
-        <div class="avatar" style="background:var(--info)">📄</div>
-        <div class="info"><div class="name">${esc(d.nome)}</div><div class="desc">${esc(d.tipo||'—')} · Val. ${fmtDate(d.validade)}</div></div>
-        <div class="actions">${statusTag(d.status)}</div>
-      </div>
-      <div class="btn-row" style="margin-top:10px">
-        <button class="btn ghost sm" onclick="openDoc('${d.id}')">✏️ Editar</button>
-        <button class="btn danger sm" onclick="delDoc('${d.id}')">🗑️</button>
-      </div>
-    </div>`).join('')}
-  `;
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
 }
-function openDoc(id){
-  const d=id?state.docs.find(x=>x.id===id):null;
-  const members=state.team.map(m=>m.name);
-  const mb=document.getElementById('modalBody');
-  mb.innerHTML=`
-    <h3>${d?'Editar documento':'Novo documento'}</h3>
-    <div class="form-row"><div><label>Nome *</label><input id="d_nome" value="${esc(d?d.nome:'')}" placeholder="NF-e 4521"></div><div><label>Tipo</label><select id="d_tipo"><option ${d&&d.tipo==='Nota fiscal'?'selected':''}>Nota fiscal</option><option ${d&&d.tipo==='Ordem de serviço'?'selected':''}>Ordem de serviço</option><option ${d&&d.tipo==='Contrato'?'selected':''}>Contrato</option><option ${d&&d.tipo==='Certificado'?'selected':''}>Certificado</option><option ${d&&d.tipo==='Laudo'?'selected':''}>Laudo</option><option ${d&&d.tipo==='Outro'?'selected':''}>Outro</option></select></div></div>
-    <div class="form-row"><div><label>Validade</label><input type="date" id="d_validade" value="${d?d.validade:''}"></div><div><label>Responsável</label><select id="d_resp"><option value="">—</option>${members.map(n=>`<option ${d&&d.responsavel===n?'selected':''}>${esc(n)}</option>`).join('')}</select></div></div>
-    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDoc('${id||''}')">Salvar</button></div>`;
-  openModal();
+
+// ============================================
+// AÇÕES DE SALVAR
+// ============================================
+async function saveTeam() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Informe o nome'); return; }
+  const ok = await addRecord('team', {
+    name,
+    role: document.getElementById('f-role').value,
+    sector: document.getElementById('f-sector').value,
+    scale: document.getElementById('f-scale').value,
+    status: document.getElementById('f-status').value
+  });
+  if (ok) closeModal();
 }
-function saveDoc(id){
-  const nome=document.getElementById('d_nome').value.trim();
-  if(!nome){toast('Informe o nome',true);return;}
-  const validade=document.getElementById('d_validade').value;
-  let status='pendente';
-  if(validade){const hoje=new Date(todayISO()),venc=new Date(validade),diff=Math.ceil((venc-hoje)/86400000);if(diff<0)status='vencido';else if(diff<=15)status='atencao';else status='valido';}
-  const data={nome,tipo:document.getElementById('d_tipo').value,validade,responsavel:document.getElementById('d_resp').value,status};
-  if(id){Object.assign(state.docs.find(x=>x.id===id),data);toast('Atualizado');}
-  else{data.id=uid();state.docs.push(data);toast('Cadastrado');}
-  save();closeModal();render();
+
+async function saveTask() {
+  const title = document.getElementById('f-title').value.trim();
+  if (!title) { toast('Informe o título'); return; }
+  const ok = await addRecord('tasks', {
+    title,
+    date: document.getElementById('f-date').value || null,
+    assignee: document.getElementById('f-assignee').value,
+    priority: document.getElementById('f-priority').value,
+    status: 'pendente'
+  });
+  if (ok) closeModal();
 }
-function delDoc(id){ if(!confirm('Excluir?'))return; state.docs=state.docs.filter(d=>d.id!==id); save(); render(); toast('Removido'); }
-function openIndicadores(){
-  const ind=state.settings.indicadores||{pedidosHoje:0,entregues:0,noPrazo:0,volume:0};
-  const mb=document.getElementById('modalBody');
-  mb.innerHTML=`
-    <h3>✏️ Indicadores do dia</h3>
-    <div class="form-row"><div><label>Pedidos hoje</label><input type="number" id="i_pedidos" value="${ind.pedidosHoje}"></div><div><label>Entregues</label><input type="number" id="i_entregues" value="${ind.entregues}"></div></div>
-    <div class="form-row"><div><label>No prazo</label><input type="number" id="i_prazo" value="${ind.noPrazo}"></div><div><label>Volume</label><input type="number" id="i_volume" value="${ind.volume}"></div></div>
-    <div class="actions"><button class="btn ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveIndicadores()">Salvar</button></div>`;
-  openModal();
+
+async function saveDoc() {
+  const nome = document.getElementById('f-nome').value.trim();
+  if (!nome) { toast('Informe o nome'); return; }
+  const ok = await addRecord('docs', {
+    nome,
+    tipo: document.getElementById('f-tipo').value,
+    validade: document.getElementById('f-validade').value || null,
+    responsavel: document.getElementById('f-resp').value,
+    status: document.getElementById('f-docstatus').value
+  });
+  if (ok) closeModal();
 }
-function saveIndicadores(){
-  state.settings.indicadores={pedidosHoje:+document.getElementById('i_pedidos').value||0,entregues:+document.getElementById('i_entregues').value||0,noPrazo:+document.getElementById('i_prazo').value||0,volume:+document.getElementById('i_volume').value||0};
-  save();closeModal();render();toast('Indicadores atualizados');
+
+// ============================================
+// AÇÕES DE EDIÇÃO / REMOÇÃO
+// ============================================
+async function toggleTask(id) {
+  const t = tasks.find(x => x.id === id);
+  if (!t) return;
+  const novo = t.status === 'concluida' ? 'pendente' : 'concluida';
+  await updateRecord('tasks', id, { status: novo });
 }
-function rSettings(){
-  return `
-  <div class="card">
-    <h3>🏢 Empresa</h3>
-    <div class="form-row one"><div><label>Nome da empresa</label><input id="s_empresa" value="${esc(state.settings.empresa||'')}"></div></div>
-    <div class="form-row one"><div><label>Responsável</label><input id="s_resp" value="${esc(state.settings.responsavel||'')}"></div></div>
-    <button class="btn" onclick="saveSettings()">Salvar</button>
-  </div>
-  <div class="card">
-    <h3>💾 Dados</h3>
-    <p style="color:var(--muted);font-size:12px;margin-bottom:12px">Os dados ficam salvos no navegador deste aparelho.</p>
-    <div class="btn-row">
-      <button class="btn ghost" onclick="exportData()">💾 Backup</button>
-      <button class="btn danger" onclick="clearData()">🗑️ Limpar</button>
-    </div>
-  </div>
-  `;
+
+async function removeTask(id) {
+  if (!confirm('Remover esta tarefa?')) return;
+  await deleteRecord('tasks', id);
 }
-function saveSettings(){ state.settings.empresa=document.getElementById('s_empresa').value.trim(); state.settings.responsavel=document.getElementById('s_resp').value.trim(); save(); render(); toast('Salvo'); }
-function exportData(){ const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='expedicao_backup_'+todayISO()+'.json'; a.click(); URL.revokeObjectURL(a.href); toast('Backup exportado'); }
-function clearData(){ if(!confirm('Apagar todos os dados deste aparelho?'))return; localStorage.removeItem(KEY); state={settings:{empresa:'Casa do Soldador',responsavel:'Henrique'},team:[],tasks:[],docs:[],ocorrencias:[],setores:{}}; save(); render(); toast('Dados limpos'); }
-function openModal(){ document.getElementById('modalBg').classList.add('show'); }
-function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
-document.getElementById('modalBg').addEventListener('click',e=>{ if(e.target.id==='modalBg')closeModal(); });
-function bind(){
-  document.querySelectorAll('.bn-item').forEach(b=>{ b.onclick=()=>setPage(b.dataset.page); });
+
+async function removeTeam(id) {
+  if (!confirm('Remover este colaborador?')) return;
+  await deleteRecord('team', id);
 }
-document.getElementById('hDate').textContent=new Date().toLocaleDateString('pt-BR',{weekday:'short',day:'numeric',month:'short'});
-load();
-render();
+
+async function removeDoc(id) {
+  if (!confirm('Remover este documento?')) return;
+  await deleteRecord('docs', id);
+}
+
+function editTeam(id) {
+  const m = team.find(x => x.id === id);
+  if (!m) return;
+  const modal = document.getElementById('modal');
+  document.getElementById('modalTitle').textContent = 'Editar colaborador';
+  document.getElementById('modalBody').innerHTML = `
+    <div class="form-group"><label>Nome *</label><input id="f-name" value="${m.name}"></div>
+    <div class="form-group"><label>Função</label><input id="f-role" value="${m.role || ''}"></div>
+    <div class="form-group"><label>Setor</label><input id="f-sector" value="${m.sector || ''}"></div>
+    <div class="form-group"><label>Período</label><select id="f-scale"><option value="">Selecione</option><option ${m.scale==='Manhã'?'selected':''}>Manhã</option><option ${m.scale==='Tarde'?'selected':''}>Tarde</option><option ${m.scale==='Noite'?'selected':''}>Noite</option><option ${m.scale==='Integral'?'selected':''}>Integral</option></select></div>
+    <div class="form-group"><label>Status</label><select id="f-status"><option value="ativo" ${m.status==='ativo'?'selected':''}>Ativo</option><option value="inativo" ${m.status==='inativo'?'selected':''}>Inativo</option></select></div>
+    <button class="btn primary" onclick="updateTeam('${id}')">Salvar</button>`;
+  modal.classList.remove('hidden');
+}
+
+async function updateTeam(id) {
+  const ok = await updateRecord('team', id, {
+    name: document.getElementById('f-name').value,
+    role: document.getElementById('f-role').value,
+    sector: document.getElementById('f-sector').value,
+    scale: document.getElementById('f-scale').value,
+    status: document.getElementById('f-status').value
+  });
+  if (ok) closeModal();
+}
+
+// ============================================
+// AJUSTES
+// ============================================
+function showStatus() {
+  toast('✅ Conectado ao Supabase — dados na nuvem');
+}
+
+// ============================================
+// UTILIDADES
+// ============================================
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Data atual
+const hoje = new Date();
+document.getElementById('currentDate').textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
+
+// Inicializar
+loadAll();
 </script>
 </body>
 </html>
