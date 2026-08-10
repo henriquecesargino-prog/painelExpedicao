@@ -15,29 +15,24 @@
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--text);padding-bottom:70px}
 .hidden{display:none!important}
-/* Header */
 header{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;padding:16px 16px 20px;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(0,0,0,.15)}
 header h1{font-size:20px;font-weight:700;display:flex;align-items:center;gap:8px}
 header .date{font-size:13px;opacity:.9;margin-top:2px}
 header .add-btn{position:absolute;right:16px;top:14px;width:40px;height:40px;border-radius:50%;background:#fff;color:var(--primary);font-size:26px;font-weight:700;border:none;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,.2);cursor:pointer}
-/* Cards KPI */
 .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px}
 .kpi{background:var(--card);border-radius:14px;padding:14px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .kpi .label{font-size:12px;color:var(--text2);font-weight:600}
 .kpi .value{font-size:26px;font-weight:800;margin-top:4px}
 .kpi .sub{font-size:12px;color:var(--gray);margin-top:2px}
 .kpi.green .value{color:var(--green)}.kpi.red .value{color:var(--red)}.kpi.blue .value{color:var(--primary)}.kpi.amber .value{color:var(--amber)}
-/* Seções */
 .section{background:var(--card);border-radius:14px;margin:0 14px 14px;padding:16px;box-shadow:0 1px 3px rgba(0,0,0,.08)}
 .section h2{font-size:16px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-/* Tarefas semana */
 .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center}
 .week .day{background:var(--bg);border-radius:10px;padding:8px 2px}
 .week .day .d{font-size:11px;color:var(--gray);font-weight:600}
 .week .day .n{font-size:16px;font-weight:800;margin-top:2px}
 .week .day.done{background:var(--green-bg);color:var(--green)}
 .week .day.partial{background:var(--amber-bg);color:var(--amber)}
-/* Listas */
 .list-item{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border)}
 .list-item:last-child{border-bottom:none}
 .list-item .info{flex:1}
@@ -48,32 +43,25 @@ header .add-btn{position:absolute;right:16px;top:14px;width:40px;height:40px;bor
 .badge.red{background:var(--red-bg);color:var(--red)}
 .badge.amber{background:var(--amber-bg);color:var(--amber)}
 .badge.blue{background:#dbeafe;color:var(--primary)}
-/* Botões */
 .btn{display:block;width:100%;padding:14px;border:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
 .btn.primary{background:var(--primary);color:#fff}
 .btn.green{background:var(--green);color:#fff}
 .btn.red{background:var(--red);color:#fff}
 .btn.gray{background:var(--bg);color:var(--text2)}
-/* Formulário */
 .form-group{margin-bottom:12px}
 .form-group label{display:block;font-size:13px;font-weight:600;color:var(--text2);margin-bottom:4px}
 .form-group input,.form-group select,.form-group textarea{width:100%;padding:11px;border:1px solid var(--border);border-radius:10px;font-size:15px;background:#fff}
 .form-group textarea{min-height:70px;resize:vertical}
-/* Modal */
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;z-index:100}
 .modal .sheet{background:#fff;width:100%;border-radius:20px 20px 0 0;padding:20px;max-height:90vh;overflow-y:auto}
 .modal .sheet h3{font-size:18px;font-weight:700;margin-bottom:16px}
-/* Navegação inferior */
 nav{position:fixed;bottom:0;left:0;right:0;background:#fff;display:flex;border-top:1px solid var(--border);z-index:60;padding-bottom:env(safe-area-inset-bottom)}
 nav button{flex:1;padding:10px 4px;border:none;background:none;font-size:10px;font-weight:600;color:var(--gray);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
 nav button.active{color:var(--primary)}
 nav button .ic{font-size:20px}
-/* Empty */
 .empty{text-align:center;color:var(--gray);padding:20px;font-size:14px}
-/* Toast */
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
-/* Loading */
 #loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300}
 #loading .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -90,7 +78,6 @@ nav button .ic{font-size:20px}
   <button class="add-btn" id="addBtn" onclick="openAdd()">+</button>
 </header>
 
-<!-- PAINEL -->
 <div id="tab-painel" class="tab">
   <div class="kpis">
     <div class="kpi blue"><div class="label">Pedidos hoje</div><div class="value" id="kpiPedidos">0</div><div class="sub" id="kpiPedidosSub">0 entregues</div></div>
@@ -98,24 +85,11 @@ nav button .ic{font-size:20px}
     <div class="kpi amber"><div class="label">Tarefas abertas</div><div class="value" id="kpiTarefas">0</div><div class="sub" id="kpiTarefasSub">0 hoje</div></div>
     <div class="kpi red"><div class="label">Ocorrências</div><div class="value" id="kpiOcorrencias">0</div><div class="sub" id="kpiOcorrenciasSub">0 abertas</div></div>
   </div>
-
-  <div class="section">
-    <h2>📅 Tarefas da semana</h2>
-    <div class="week" id="weekGrid"></div>
-  </div>
-
-  <div class="section">
-    <h2>👥 Equipe</h2>
-    <div id="teamList"></div>
-  </div>
-
-  <div class="section">
-    <h2>📁 Documentos</h2>
-    <div id="docsList"></div>
-  </div>
+  <div class="section"><h2>📅 Tarefas da semana</h2><div class="week" id="weekGrid"></div></div>
+  <div class="section"><h2>👥 Equipe</h2><div id="teamList"></div></div>
+  <div class="section"><h2>📁 Documentos</h2><div id="docsList"></div></div>
 </div>
 
-<!-- GESTÃO -->
 <div id="tab-gestao" class="tab hidden">
   <div class="section">
     <h2>👥 Colaboradores</h2>
@@ -124,7 +98,6 @@ nav button .ic{font-size:20px}
   </div>
 </div>
 
-<!-- ROTINAS -->
 <div id="tab-rotinas" class="tab hidden">
   <div class="section">
     <h2>🔄 Tarefas</h2>
@@ -133,7 +106,6 @@ nav button .ic{font-size:20px}
   </div>
 </div>
 
-<!-- DOCS -->
 <div id="tab-docs" class="tab hidden">
   <div class="section">
     <h2>📁 Documentos</h2>
@@ -142,7 +114,6 @@ nav button .ic{font-size:20px}
   </div>
 </div>
 
-<!-- AJUSTES -->
 <div id="tab-ajustes" class="tab hidden">
   <div class="section">
     <h2>⚙️ Ajustes</h2>
@@ -151,7 +122,6 @@ nav button .ic{font-size:20px}
   </div>
 </div>
 
-<!-- MODAL -->
 <div id="modal" class="modal hidden" onclick="if(event.target===this)closeModal()">
   <div class="sheet">
     <h3 id="modalTitle">Novo item</h3>
@@ -171,24 +141,18 @@ nav button .ic{font-size:20px}
 
 <script>
 // ============================================
-// CONFIGURAÇÃO SUPABASE
+// CONFIGURAÇÃO SUPABASE (URL CORRETA)
 // ============================================
-const SUPABASE_URL = 'https://arddjbrlrvhfkicwxau.supabase.co';
+const SUPABASE_URL = 'https://arddjbrlrvhfkicqwxau.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_UtMW4iyPKhVetCSRR2AnoA_tokTJiwv';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ============================================
-// ESTADO
-// ============================================
 let team = [];
 let tasks = [];
 let ocorrencias = [];
 let docs = [];
 
-// ============================================
-// FUNÇÕES DE DADOS (Supabase)
-// ============================================
 async function loadAll() {
   try {
     const [t, tk, o, d] = await Promise.all([
@@ -252,9 +216,6 @@ async function deleteRecord(table, id) {
   }
 }
 
-// ============================================
-// RENDERIZAÇÃO
-// ============================================
 function renderAll() {
   renderKPIs();
   renderWeek();
@@ -273,7 +234,6 @@ function renderKPIs() {
   const tarefasAbertas = tasks.filter(t => t.status !== 'concluida').length;
   const tarefasHoje = tasks.filter(t => t.date === hoje && t.status !== 'concluida').length;
   const ocorrAbertas = ocorrencias.filter(o => o.status === 'aberta').length;
-
   document.getElementById('kpiPedidos').textContent = pedidosHoje;
   document.getElementById('kpiPedidosSub').textContent = entregues + ' entregues';
   document.getElementById('kpiPrazo').textContent = prazo + '%';
@@ -291,7 +251,6 @@ function renderWeek() {
   const hoje = new Date();
   const inicioSemana = new Date(hoje);
   inicioSemana.setDate(hoje.getDate() - (hoje.getDay() === 0 ? 6 : hoje.getDay() - 1));
-
   dias.forEach((d, i) => {
     const data = new Date(inicioSemana);
     data.setDate(inicioSemana.getDate() + i);
@@ -311,10 +270,7 @@ function renderTeam() {
   if (ativos.length === 0) { el.innerHTML = '<div class="empty">Nenhum colaborador ativo</div>'; return; }
   el.innerHTML = ativos.slice(0,5).map(m => `
     <div class="list-item">
-      <div class="info">
-        <div class="name">${m.name}</div>
-        <div class="meta">${m.role || '—'} · ${m.sector || '—'}</div>
-      </div>
+      <div class="info"><div class="name">${m.name}</div><div class="meta">${m.role || '—'} · ${m.sector || '—'}</div></div>
       <span class="badge green">Ativo</span>
     </div>`).join('');
 }
@@ -324,10 +280,7 @@ function renderDocs() {
   if (docs.length === 0) { el.innerHTML = '<div class="empty">Nenhum documento.</div>'; return; }
   el.innerHTML = docs.slice(0,3).map(d => `
     <div class="list-item">
-      <div class="info">
-        <div class="name">${d.nome}</div>
-        <div class="meta">${d.tipo || '—'} · ${d.status || '—'}</div>
-      </div>
+      <div class="info"><div class="name">${d.nome}</div><div class="meta">${d.tipo || '—'} · ${d.status || '—'}</div></div>
       <span class="badge ${d.status === 'ok' ? 'green' : 'amber'}">${d.status || '—'}</span>
     </div>`).join('');
 }
@@ -337,10 +290,7 @@ function renderGestaoTeam() {
   if (team.length === 0) { el.innerHTML = '<div class="empty">Nenhum colaborador cadastrado</div>'; return; }
   el.innerHTML = team.map(m => `
     <div class="list-item">
-      <div class="info">
-        <div class="name">${m.name}</div>
-        <div class="meta">${m.role || '—'} · ${m.sector || '—'} · ${m.scale || '—'}</div>
-      </div>
+      <div class="info"><div class="name">${m.name}</div><div class="meta">${m.role || '—'} · ${m.sector || '—'} · ${m.scale || '—'}</div></div>
       <div style="display:flex;gap:6px">
         <span class="badge ${m.status === 'ativo' ? 'green' : 'red'}">${m.status || '—'}</span>
         <button class="badge blue" onclick="editTeam('${m.id}')">✏️</button>
@@ -354,10 +304,7 @@ function renderTasks() {
   if (tasks.length === 0) { el.innerHTML = '<div class="empty">Nenhuma tarefa</div>'; return; }
   el.innerHTML = tasks.map(t => `
     <div class="list-item">
-      <div class="info">
-        <div class="name">${t.title}</div>
-        <div class="meta">${t.date || '—'} · ${t.assignee || '—'} · ${t.priority || '—'}</div>
-      </div>
+      <div class="info"><div class="name">${t.title}</div><div class="meta">${t.date || '—'} · ${t.assignee || '—'} · ${t.priority || '—'}</div></div>
       <div style="display:flex;gap:6px;align-items:center">
         <span class="badge ${t.status === 'concluida' ? 'green' : (t.status === 'em_andamento' ? 'amber' : 'blue')}">${t.status || '—'}</span>
         <button class="badge blue" onclick="toggleTask('${t.id}')">✓</button>
@@ -371,10 +318,7 @@ function renderDocsFull() {
   if (docs.length === 0) { el.innerHTML = '<div class="empty">Nenhum documento</div>'; return; }
   el.innerHTML = docs.map(d => `
     <div class="list-item">
-      <div class="info">
-        <div class="name">${d.nome}</div>
-        <div class="meta">${d.tipo || '—'} · ${d.validade || '—'} · ${d.responsavel || '—'}</div>
-      </div>
+      <div class="info"><div class="name">${d.nome}</div><div class="meta">${d.tipo || '—'} · ${d.validade || '—'} · ${d.responsavel || '—'}</div></div>
       <div style="display:flex;gap:6px">
         <span class="badge ${d.status === 'ok' ? 'green' : 'amber'}">${d.status || '—'}</span>
         <button class="badge red" onclick="removeDoc('${d.id}')">🗑️</button>
@@ -382,9 +326,6 @@ function renderDocsFull() {
     </div>`).join('');
 }
 
-// ============================================
-// NAVEGAÇÃO
-// ============================================
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
   document.getElementById('tab-' + tab).classList.remove('hidden');
@@ -392,14 +333,10 @@ function switchTab(tab) {
   document.querySelector(`nav button[data-tab="${tab}"]`).classList.add('active');
 }
 
-// ============================================
-// MODAL / FORMULÁRIOS
-// ============================================
 function openAdd(type) {
   const modal = document.getElementById('modal');
   const title = document.getElementById('modalTitle');
   const body = document.getElementById('modalBody');
-
   if (type === 'team') {
     title.textContent = 'Novo colaborador';
     body.innerHTML = `
@@ -433,55 +370,29 @@ function openAdd(type) {
   modal.classList.remove('hidden');
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.add('hidden');
-}
+function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-// ============================================
-// AÇÕES DE SALVAR
-// ============================================
 async function saveTeam() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { toast('Informe o nome'); return; }
-  const ok = await addRecord('team', {
-    name,
-    role: document.getElementById('f-role').value,
-    sector: document.getElementById('f-sector').value,
-    scale: document.getElementById('f-scale').value,
-    status: document.getElementById('f-status').value
-  });
+  const ok = await addRecord('team', { name, role: document.getElementById('f-role').value, sector: document.getElementById('f-sector').value, scale: document.getElementById('f-scale').value, status: document.getElementById('f-status').value });
   if (ok) closeModal();
 }
 
 async function saveTask() {
   const title = document.getElementById('f-title').value.trim();
   if (!title) { toast('Informe o título'); return; }
-  const ok = await addRecord('tasks', {
-    title,
-    date: document.getElementById('f-date').value || null,
-    assignee: document.getElementById('f-assignee').value,
-    priority: document.getElementById('f-priority').value,
-    status: 'pendente'
-  });
+  const ok = await addRecord('tasks', { title, date: document.getElementById('f-date').value || null, assignee: document.getElementById('f-assignee').value, priority: document.getElementById('f-priority').value, status: 'pendente' });
   if (ok) closeModal();
 }
 
 async function saveDoc() {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { toast('Informe o nome'); return; }
-  const ok = await addRecord('docs', {
-    nome,
-    tipo: document.getElementById('f-tipo').value,
-    validade: document.getElementById('f-validade').value || null,
-    responsavel: document.getElementById('f-resp').value,
-    status: document.getElementById('f-docstatus').value
-  });
+  const ok = await addRecord('docs', { nome, tipo: document.getElementById('f-tipo').value, validade: document.getElementById('f-validade').value || null, responsavel: document.getElementById('f-resp').value, status: document.getElementById('f-docstatus').value });
   if (ok) closeModal();
 }
 
-// ============================================
-// AÇÕES DE EDIÇÃO / REMOÇÃO
-// ============================================
 async function toggleTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
@@ -489,20 +400,9 @@ async function toggleTask(id) {
   await updateRecord('tasks', id, { status: novo });
 }
 
-async function removeTask(id) {
-  if (!confirm('Remover esta tarefa?')) return;
-  await deleteRecord('tasks', id);
-}
-
-async function removeTeam(id) {
-  if (!confirm('Remover este colaborador?')) return;
-  await deleteRecord('team', id);
-}
-
-async function removeDoc(id) {
-  if (!confirm('Remover este documento?')) return;
-  await deleteRecord('docs', id);
-}
+async function removeTask(id) { if (!confirm('Remover esta tarefa?')) return; await deleteRecord('tasks', id); }
+async function removeTeam(id) { if (!confirm('Remover este colaborador?')) return; await deleteRecord('team', id); }
+async function removeDoc(id) { if (!confirm('Remover este documento?')) return; await deleteRecord('docs', id); }
 
 function editTeam(id) {
   const m = team.find(x => x.id === id);
@@ -520,26 +420,12 @@ function editTeam(id) {
 }
 
 async function updateTeam(id) {
-  const ok = await updateRecord('team', id, {
-    name: document.getElementById('f-name').value,
-    role: document.getElementById('f-role').value,
-    sector: document.getElementById('f-sector').value,
-    scale: document.getElementById('f-scale').value,
-    status: document.getElementById('f-status').value
-  });
+  const ok = await updateRecord('team', id, { name: document.getElementById('f-name').value, role: document.getElementById('f-role').value, sector: document.getElementById('f-sector').value, scale: document.getElementById('f-scale').value, status: document.getElementById('f-status').value });
   if (ok) closeModal();
 }
 
-// ============================================
-// AJUSTES
-// ============================================
-function showStatus() {
-  toast('✅ Conectado ao Supabase — dados na nuvem');
-}
+function showStatus() { toast('✅ Conectado ao Supabase — dados na nuvem'); }
 
-// ============================================
-// UTILIDADES
-// ============================================
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -547,11 +433,9 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// Data atual
 const hoje = new Date();
 document.getElementById('currentDate').textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-// Inicializar
 loadAll();
 </script>
 </body>
