@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Expedição Mobile</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -62,15 +61,9 @@ nav button .ic{font-size:20px}
 .empty{text-align:center;color:var(--gray);padding:20px;font-size:14px}
 #toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;font-weight:600;z-index:200;opacity:0;transition:opacity .3s;pointer-events:none}
 #toast.show{opacity:1}
-#loading{position:fixed;inset:0;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300}
-#loading .spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin 1s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-#loading p{margin-top:12px;color:var(--gray);font-size:14px}
 </style>
 </head>
 <body>
-
-<div id="loading"><div class="spinner"></div><p>Conectando ao banco de dados...</p></div>
 
 <header>
   <h1>📦 Painel</h1>
@@ -117,8 +110,10 @@ nav button .ic{font-size:20px}
 <div id="tab-ajustes" class="tab hidden">
   <div class="section">
     <h2>⚙️ Ajustes</h2>
-    <p style="font-size:14px;color:var(--text2);margin-bottom:12px">Seus dados agora são salvos na nuvem (Supabase) e ficam sincronizados entre todos os aparelhos.</p>
-    <button class="btn gray" onclick="showStatus()">🔌 Status da conexão</button>
+    <p style="font-size:14px;color:var(--text2);margin-bottom:12px">Seus dados ficam salvos neste navegador. Faça backup regularmente para não perder nada.</p>
+    <button class="btn green" onclick="backup()">💾 Salvar backup</button>
+    <button class="btn primary" onclick="document.getElementById('restoreInput').click()">📥 Restaurar backup</button>
+    <input type="file" id="restoreInput" accept=".json" style="display:none" onchange="restore(event)">
   </div>
 </div>
 
@@ -141,81 +136,80 @@ nav button .ic{font-size:20px}
 
 <script>
 // ============================================
-// CONFIGURAÇÃO SUPABASE (URL CORRETA)
+// ESTADO (dados salvos no navegador)
 // ============================================
-const SUPABASE_URL = 'https://arddjbrlrvhfkicqwxau.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_UtMW4iyPKhVetCSRR2AnoA_tokTJiwv';
-
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
 let team = [];
 let tasks = [];
 let ocorrencias = [];
 let docs = [];
 
-async function loadAll() {
+const STORAGE_KEY = 'expedicao_data';
+
+// ============================================
+// SALVAR / CARREGAR (localStorage)
+// ============================================
+function save() {
+  const data = { team, tasks, ocorrencias, docs };
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+function load() {
   try {
-    const [t, tk, o, d] = await Promise.all([
-      supabase.from('team').select('*').order('name'),
-      supabase.from('tasks').select('*').order('date', {ascending:false}),
-      supabase.from('ocorrencias').select('*').order('date', {ascending:false}),
-      supabase.from('docs').select('*').order('nome')
-    ]);
-    team = t.data || [];
-    tasks = tk.data || [];
-    ocorrencias = o.data || [];
-    docs = d.data || [];
-    renderAll();
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    team = data.team || [];
+    tasks = data.tasks || [];
+    ocorrencias = data.ocorrencias || [];
+    docs = data.docs || [];
   } catch(e) {
-    console.error('Erro ao carregar:', e);
-    toast('Erro ao conectar ao banco de dados');
-  } finally {
-    document.getElementById('loading').classList.add('hidden');
+    console.error('Erro ao carregar dados:', e);
   }
 }
 
-async function addRecord(table, data) {
-  try {
-    const { error } = await supabase.from(table).insert(data);
-    if (error) throw error;
-    await loadAll();
-    toast('Salvo com sucesso!');
-    return true;
-  } catch(e) {
-    console.error('Erro ao salvar:', e);
-    toast('Erro ao salvar: ' + (e.message || 'tente novamente'));
-    return false;
-  }
+// ============================================
+// BACKUP / RESTAURAR
+// ============================================
+function backup() {
+  const data = { team, tasks, ocorrencias, docs, backupDate: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const hoje = new Date().toISOString().split('T')[0];
+  a.href = url;
+  a.download = 'expedicao_backup_' + hoje + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('💾 Backup salvo!');
 }
 
-async function updateRecord(table, id, data) {
-  try {
-    const { error } = await supabase.from(table).update(data).eq('id', id);
-    if (error) throw error;
-    await loadAll();
-    toast('Atualizado!');
-    return true;
-  } catch(e) {
-    console.error('Erro ao atualizar:', e);
-    toast('Erro ao atualizar');
-    return false;
-  }
+function restore(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      team = data.team || [];
+      tasks = data.tasks || [];
+      ocorrencias = data.ocorrencias || [];
+      docs = data.docs || [];
+      save();
+      renderAll();
+      toast('📥 Backup restaurado com sucesso!');
+    } catch(err) {
+      toast('❌ Arquivo de backup inválido');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
-async function deleteRecord(table, id) {
-  try {
-    const { error } = await supabase.from(table).delete().eq('id', id);
-    if (error) throw error;
-    await loadAll();
-    toast('Removido');
-    return true;
-  } catch(e) {
-    console.error('Erro ao remover:', e);
-    toast('Erro ao remover');
-    return false;
-  }
-}
-
+// ============================================
+// RENDERIZAÇÃO
+// ============================================
 function renderAll() {
   renderKPIs();
   renderWeek();
@@ -326,6 +320,9 @@ function renderDocsFull() {
     </div>`).join('');
 }
 
+// ============================================
+// NAVEGAÇÃO
+// ============================================
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'));
   document.getElementById('tab-' + tab).classList.remove('hidden');
@@ -333,6 +330,9 @@ function switchTab(tab) {
   document.querySelector(`nav button[data-tab="${tab}"]`).classList.add('active');
 }
 
+// ============================================
+// MODAL / FORMULÁRIOS
+// ============================================
 function openAdd(type) {
   const modal = document.getElementById('modal');
   const title = document.getElementById('modalTitle');
@@ -372,37 +372,45 @@ function openAdd(type) {
 
 function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
-async function saveTeam() {
+// ============================================
+// AÇÕES DE SALVAR
+// ============================================
+function genId() { return 'id_' + Date.now() + '_' + Math.random().toString(36).substr(2,9); }
+
+function saveTeam() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { toast('Informe o nome'); return; }
-  const ok = await addRecord('team', { name, role: document.getElementById('f-role').value, sector: document.getElementById('f-sector').value, scale: document.getElementById('f-scale').value, status: document.getElementById('f-status').value });
-  if (ok) closeModal();
+  team.push({ id: genId(), name, role: document.getElementById('f-role').value, sector: document.getElementById('f-sector').value, scale: document.getElementById('f-scale').value, status: document.getElementById('f-status').value });
+  save(); renderAll(); closeModal(); toast('✅ Colaborador salvo!');
 }
 
-async function saveTask() {
+function saveTask() {
   const title = document.getElementById('f-title').value.trim();
   if (!title) { toast('Informe o título'); return; }
-  const ok = await addRecord('tasks', { title, date: document.getElementById('f-date').value || null, assignee: document.getElementById('f-assignee').value, priority: document.getElementById('f-priority').value, status: 'pendente' });
-  if (ok) closeModal();
+  tasks.push({ id: genId(), title, date: document.getElementById('f-date').value || '', assignee: document.getElementById('f-assignee').value, priority: document.getElementById('f-priority').value, status: 'pendente' });
+  save(); renderAll(); closeModal(); toast('✅ Tarefa salva!');
 }
 
-async function saveDoc() {
+function saveDoc() {
   const nome = document.getElementById('f-nome').value.trim();
   if (!nome) { toast('Informe o nome'); return; }
-  const ok = await addRecord('docs', { nome, tipo: document.getElementById('f-tipo').value, validade: document.getElementById('f-validade').value || null, responsavel: document.getElementById('f-resp').value, status: document.getElementById('f-docstatus').value });
-  if (ok) closeModal();
+  docs.push({ id: genId(), nome, tipo: document.getElementById('f-tipo').value, validade: document.getElementById('f-validade').value || '', responsavel: document.getElementById('f-resp').value, status: document.getElementById('f-docstatus').value });
+  save(); renderAll(); closeModal(); toast('✅ Documento salvo!');
 }
 
-async function toggleTask(id) {
+// ============================================
+// AÇÕES DE EDIÇÃO / REMOÇÃO
+// ============================================
+function toggleTask(id) {
   const t = tasks.find(x => x.id === id);
   if (!t) return;
-  const novo = t.status === 'concluida' ? 'pendente' : 'concluida';
-  await updateRecord('tasks', id, { status: novo });
+  t.status = t.status === 'concluida' ? 'pendente' : 'concluida';
+  save(); renderAll();
 }
 
-async function removeTask(id) { if (!confirm('Remover esta tarefa?')) return; await deleteRecord('tasks', id); }
-async function removeTeam(id) { if (!confirm('Remover este colaborador?')) return; await deleteRecord('team', id); }
-async function removeDoc(id) { if (!confirm('Remover este documento?')) return; await deleteRecord('docs', id); }
+function removeTask(id) { if (!confirm('Remover esta tarefa?')) return; tasks = tasks.filter(x => x.id !== id); save(); renderAll(); }
+function removeTeam(id) { if (!confirm('Remover este colaborador?')) return; team = team.filter(x => x.id !== id); save(); renderAll(); }
+function removeDoc(id) { if (!confirm('Remover este documento?')) return; docs = docs.filter(x => x.id !== id); save(); renderAll(); }
 
 function editTeam(id) {
   const m = team.find(x => x.id === id);
@@ -419,13 +427,20 @@ function editTeam(id) {
   modal.classList.remove('hidden');
 }
 
-async function updateTeam(id) {
-  const ok = await updateRecord('team', id, { name: document.getElementById('f-name').value, role: document.getElementById('f-role').value, sector: document.getElementById('f-sector').value, scale: document.getElementById('f-scale').value, status: document.getElementById('f-status').value });
-  if (ok) closeModal();
+function updateTeam(id) {
+  const m = team.find(x => x.id === id);
+  if (!m) return;
+  m.name = document.getElementById('f-name').value;
+  m.role = document.getElementById('f-role').value;
+  m.sector = document.getElementById('f-sector').value;
+  m.scale = document.getElementById('f-scale').value;
+  m.status = document.getElementById('f-status').value;
+  save(); renderAll(); closeModal(); toast('✅ Atualizado!');
 }
 
-function showStatus() { toast('✅ Conectado ao Supabase — dados na nuvem'); }
-
+// ============================================
+// UTILIDADES
+// ============================================
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -436,7 +451,9 @@ function toast(msg) {
 const hoje = new Date();
 document.getElementById('currentDate').textContent = hoje.toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
 
-loadAll();
+// Inicializar
+load();
+renderAll();
 </script>
 </body>
 </html>
